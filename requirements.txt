@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pydantic
+supabase
+browser-use
+langchain-google-genai
+playwright
+python-dotenv
