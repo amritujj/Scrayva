@@ -48,8 +48,14 @@ export default function Dashboard() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setUser(user);
-        setTier(user.user_metadata?.tier || 'Free');
-        setCredits(user.user_metadata?.credits ?? (user.user_metadata?.tier === 'Pro' ? 50 : 5));
+        const userTier = user.user_metadata?.tier || 'Free';
+        setTier(userTier);
+        
+        let initialCredits = 5;
+        if (userTier === 'Pro') initialCredits = 60;
+        if (userTier === 'Ultimate') initialCredits = 200;
+        
+        setCredits(user.user_metadata?.credits ?? initialCredits);
       } else {
         router.push('/login');
       }

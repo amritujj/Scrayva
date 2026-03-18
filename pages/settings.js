@@ -30,6 +30,7 @@ export default function Settings() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('account');
   const [user, setUser] = useState(null);
+  const [isYearly, setIsYearly] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [modelChoice, setModelChoice] = useState('GPT-4o (Default)');
@@ -50,10 +51,12 @@ export default function Settings() {
   };
 
   const triggerUpgrade = (tier) => {
+    const cycle = isYearly ? 'yearly' : 'monthly';
     handleRazorpayCheckout(
       tier,
+      cycle,
       (data) => {
-        showToast(`Successfully upgraded to ${data.tier}!`, 'success');
+        showToast(`Successfully upgraded to ${data.tier} (${cycle})!`, 'success');
         // Refresh session
         supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
       },
@@ -165,22 +168,34 @@ export default function Settings() {
                       </div>
                     </div>
                     
-                    <div className="bg-scrayva-dark p-5 rounded-xl border border-scrayva-dark-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="bg-scrayva-dark p-6 rounded-xl border border-scrayva-dark-border flex flex-col items-start lg:flex-row lg:items-center justify-between gap-6">
                       <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Current Plan</label>
-                        <p className="text-lg text-white font-medium capitalize">{user.user_metadata?.tier || 'Free'} Tier</p>
+                        <p className="text-xl text-white font-bold capitalize">{user.user_metadata?.tier || 'Free'} Tier</p>
+                        <p className="text-sm text-slate-400 mt-1">Upgrade your plan to unlock higher limits and faster automation sequences.</p>
                       </div>
-                      <div className="flex gap-2">
-                        {user.user_metadata?.tier !== 'Pro' && (
-                          <button onClick={() => triggerUpgrade('Pro')} className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-lg shadow-purple-600/20">
-                            Upgrade to Pro
+                      
+                      <div className="flex flex-col items-end gap-3 w-full lg:w-auto">
+                        {/* Tiny inline toggle just for Settings */}
+                        <div className="bg-slate-800/80 p-1 rounded-lg border border-slate-700 flex text-xs">
+                          <button onClick={() => setIsYearly(false)} className={`px-4 py-1.5 rounded-md font-semibold transition-colors ${!isYearly ? 'bg-slate-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}>Monthly</button>
+                          <button onClick={() => setIsYearly(true)} className={`px-4 py-1.5 rounded-md font-semibold transition-colors flex gap-1 items-center ${isYearly ? 'bg-slate-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}>
+                            Yearly <span className="text-[9px] text-green-400 uppercase tracking-widest">Wow!</span>
                           </button>
-                        )}
-                        {user.user_metadata?.tier !== 'Ultimate' && (
-                          <button onClick={() => triggerUpgrade('Ultimate')} className="px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-lg shadow-purple-500/20">
-                            Upgrade to Ultimate
-                          </button>
-                        )}
+                        </div>
+                        
+                        <div className="flex gap-2 w-full sm:w-auto">
+                          {user.user_metadata?.tier !== 'Pro' && (
+                            <button onClick={() => triggerUpgrade('Pro')} className="flex-1 sm:flex-none px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 hover:border-slate-600 text-sm font-bold rounded-lg transition-colors">
+                              Upgrade to Pro
+                            </button>
+                          )}
+                          {user.user_metadata?.tier !== 'Ultimate' && (
+                            <button onClick={() => triggerUpgrade('Ultimate')} className="flex-1 sm:flex-none px-5 py-2.5 bg-brand-primary hover:bg-brand-secondary text-white text-sm font-bold rounded-lg transition-colors shadow-lg shadow-brand-primary/20">
+                              Upgrade to Ultimate
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
 

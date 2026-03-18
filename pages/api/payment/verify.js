@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     }
 
     // Determine new credits
-    const credits = tier === 'Pro' ? 50 : tier === 'Ultimate' ? 250 : 5;
+    const credits = tier === 'Pro' ? 60 : tier === 'Ultimate' ? 200 : 5;
 
     // Update user metadata using admin client
     const { error: updateError } = await supabase.auth.admin.updateUserById(user.id, {

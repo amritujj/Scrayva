@@ -9,6 +9,7 @@ import useScrollReveal from '../hooks/useScrollReveal';
 export default function Landing() {
   const router = useRouter();
   const [user, setUser] = useState(null);
+  const [isYearly, setIsYearly] = useState(false);
   useScrollReveal();
 
   useEffect(() => {
@@ -32,8 +33,10 @@ export default function Landing() {
       return;
     }
 
+    const cycle = isYearly ? 'yearly' : 'monthly';
     handleRazorpayCheckout(
       planName,
+      cycle,
       (data) => {
         router.push('/dashboard');
       },
@@ -305,39 +308,98 @@ export default function Landing() {
       <section className="py-24" id="pricing">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 data-reveal className="text-3xl font-bold text-white mb-4">Scale as You Grow</h2>
-            <p data-reveal data-delay="150" className="text-slate-400">Simple, usage-based pricing for businesses of all sizes.</p>
+            <h2 data-reveal className="text-3xl font-bold text-white mb-4">Pricing that Scales with You</h2>
+            <p data-reveal data-delay="150" className="text-slate-400 mb-8 mt-2">Choose the plan that fits your business needs.</p>
+            
+            {/* Monthly / Yearly Toggle */}
+            <div data-reveal data-delay="200" className="flex items-center justify-center mb-12">
+              <div className="bg-slate-800/50 p-1.5 rounded-full border border-white/10 flex relative isolate">
+                <button 
+                  onClick={() => setIsYearly(false)}
+                  className={`relative z-10 px-6 py-2 rounded-full text-sm font-semibold transition-colors ${!isYearly ? 'text-white' : 'text-slate-400 hover:text-white'}`}>
+                  Monthly
+                </button>
+                <button 
+                  onClick={() => setIsYearly(true)}
+                  className={`relative z-10 px-6 py-2 rounded-full text-sm font-semibold transition-colors flex gap-2 items-center ${isYearly ? 'text-white' : 'text-slate-400 hover:text-white'}`}>
+                  Yearly <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full uppercase tracking-wider">Save 16%</span>
+                </button>
+                <div 
+                  className="absolute top-1.5 bottom-1.5 w-[50%] bg-brand-primary rounded-full transition-transform duration-300 ease-in-out shadow-lg shadow-brand-primary/20 z-0"
+                  style={{ transform: isYearly ? 'translateX(100%)' : 'translateX(0)' }} 
+                />
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {[
-              { name: 'Free', price: '$0',  features: ['5 Credits / mo', '1 Concurrent Agent', 'Community Support'],                                      popular: false, delay: '0'   },
-              { name: 'Pro',  price: '$49', features: ['50 Credits / mo', '5 Concurrent Agents', 'Shared Memory', 'Priority Support'],       popular: true,  delay: '150' },
-              { name: 'Scale',   price: 'Custom', features: ['Unlimited Credits', 'Unlimited Agents', 'Dedicated API & Webhooks', 'Dedicated Account Manager'],    popular: false, delay: '300' },
+              { 
+                name: 'Free', 
+                price: '₹0', 
+                period: '',
+                audience: 'For students trying the product',
+                features: ['5 Tasks per month', '1 Workspace', 'Community Support', 'Basic speed queue'], 
+                missing: ['No data exports'],
+                popular: false, 
+                delay: '0'   
+              },
+              { 
+                name: 'Pro',  
+                price: isYearly ? '₹3,999' : '₹399', 
+                period: isYearly ? '/yr' : '/mo',
+                audience: 'For freelancers & small businesses',
+                features: ['60 Tasks per month', 'Normal execution speed', 'Data Exports (CSV/JSON)', 'Saved task history', 'Basic workflows'], 
+                popular: true,  
+                delay: '150' 
+              },
+              { 
+                name: 'Ultimate',   
+                price: isYearly ? '₹9,999' : '₹999',
+                period: isYearly ? '/yr' : '/mo',
+                audience: 'For mid-level & scaling businesses', 
+                features: ['200 Tasks per month', 'Faster priority queue', 'Data Exports (CSV/JSON)', 'Saved workflows', 'Live task monitoring', 'Priority Support'],    
+                popular: false, 
+                delay: '300' 
+              },
             ].map((plan) => (
               <div key={plan.name}
                 data-reveal data-delay={plan.delay}
-                className={`p-8 rounded-3xl flex flex-col ${plan.popular ? 'bg-brand-primary/5 border-2 border-brand-primary relative scale-105 shadow-2xl shadow-brand-primary/10' : 'bg-slate-800/10 border border-white/5'}`}>
+                className={`p-8 rounded-3xl flex flex-col ${plan.popular ? 'bg-brand-primary/5 border-2 border-brand-primary relative lg:scale-105 shadow-2xl shadow-brand-primary/10 z-10' : 'bg-slate-800/10 border border-white/5'}`}>
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-primary text-white text-[10px] font-bold uppercase tracking-widest py-1 px-4 rounded-full">Most Popular</div>
                 )}
-                <h3 className="text-lg font-semibold text-white mb-2">{plan.name}</h3>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold text-white">{plan.price}</span>
-                  <span className="text-slate-400">/mo</span>
+                
+                <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">{plan.name}</h3>
+                <p className="text-slate-400 text-sm mb-6 pb-6 border-b border-white/10 h-16">{plan.audience}</p>
+                
+                <div className="mb-8">
+                  <span className="text-5xl font-extrabold text-white tracking-tighter">{plan.price}</span>
+                  <span className="text-slate-400 ml-1">{plan.period}</span>
                 </div>
-                <ul className="text-slate-400 space-y-4 mb-8 flex-grow">
+                
+                <ul className="text-slate-300 space-y-4 mb-10 flex-grow">
                   {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-3">
-                      <svg className="w-5 h-5 text-brand-primary flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
+                    <li key={f} className="flex items-start gap-3 text-sm font-medium">
+                      <svg className="w-5 h-5 text-brand-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      {f}
+                    </li>
+                  ))}
+                  {plan.missing && plan.missing.map((f) => (
+                    <li key={f} className="flex items-start gap-3 text-sm font-medium text-slate-500 opacity-60">
+                      <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                       </svg>
                       {f}
                     </li>
                   ))}
                 </ul>
+                
                 <button onClick={() => handlePlanClick(plan.name)}
-                  className={`w-full py-3 px-6 rounded-xl font-semibold transition-colors text-center block ${plan.popular ? 'bg-brand-primary hover:bg-brand-secondary text-white shadow-lg shadow-brand-primary/20' : 'border border-white/10 hover:bg-white/5 text-white'}`}>
-                  {plan.popular ? 'Get Started' : plan.name === 'Scale' ? 'Contact Sales' : `Choose ${plan.name}`}
+                  className={`w-full py-3.5 px-6 rounded-xl font-bold transition-all text-center block ${plan.popular ? 'bg-brand-primary hover:bg-brand-secondary text-white shadow-lg shadow-brand-primary/20' : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 hover:border-slate-600'}`}>
+                  {plan.popular ? 'Get Started' : `Choose ${plan.name}`}
                 </button>
               </div>
             ))}

@@ -16,13 +16,17 @@ export default async function handler(req, res) {
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) return res.status(401).json({ error: 'Unauthorized: Invalid token' });
 
-    const { tier } = req.body;
+    const { tier, cycle } = req.body;
     if (!['Pro', 'Ultimate'].includes(tier)) {
       return res.status(400).json({ error: 'Invalid plan selected' });
     }
 
-    // Temporarily forcing all test payments to exactly 1 INR (100 paise)
-    const amount = 100; 
+    let amount = 0;
+    if (tier === 'Pro') {
+      amount = cycle === 'yearly' ? 399900 : 39900;
+    } else if (tier === 'Ultimate') {
+      amount = cycle === 'yearly' ? 999900 : 99900;
+    }
 
     const razorpay = new Razorpay({
       key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
