@@ -51,7 +51,7 @@ export default function Landing() {
       <Head>
         <title>Scrayva | Turn Browser Tasks into Business Outcomes</title>
         <meta name="description" content="Autonomous AI agents that navigate the web, find leads, monitor competitors, and extract structured data." />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
       </Head>
 
       {/* ── Navigation ── */}
