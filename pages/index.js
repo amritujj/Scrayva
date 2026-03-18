@@ -72,7 +72,7 @@ export default function Landing() {
               ) : (
                 <span className="text-slate-400 text-xs py-1 px-3 border border-slate-700/50 rounded-full">{user.email}</span>
               )}
-              <Link href="/dashboard" className="bg-brand-primary hover:bg-brand-secondary text-white px-5 py-2.5 rounded-full transition-all shadow-lg shadow-brand-primary/20">
+              <Link href={user ? "/dashboard" : "/signup"} className="bg-brand-primary hover:bg-brand-secondary text-white px-5 py-2.5 rounded-full transition-all shadow-lg shadow-brand-primary/20">
                 {user ? 'Go to Dashboard' : 'Start Automating'}
               </Link>
             </div>
@@ -105,7 +105,7 @@ export default function Landing() {
 
           <div data-reveal data-delay="450"
             className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/dashboard"
+            <Link href={user ? "/dashboard" : "/signup"}
               className="w-full sm:w-auto px-8 py-4 bg-brand-primary hover:bg-brand-secondary text-white rounded-xl font-bold text-lg transition-all shadow-xl shadow-brand-primary/30">
               {user ? 'Go to Dashboard' : 'Start Automating'}
             </Link>

@@ -50,6 +50,8 @@ export default function Dashboard() {
         setUser(user);
         setTier(user.user_metadata?.tier || 'Free');
         setCredits(user.user_metadata?.credits ?? (user.user_metadata?.tier === 'Pro' ? 50 : 5));
+      } else {
+        router.push('/login');
       }
     });
 
