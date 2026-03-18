@@ -229,29 +229,29 @@ export default function TaskDetail() {
         </div>
       </header>
 
-      <main className="flex-1 flex overflow-hidden" style={{ minHeight: 0 }}>
-        {/* Left Panel */}
-        <aside className="w-1/3 lg:w-1/4 border-r border-scrayva-dark-border bg-slate-900/50 overflow-y-auto p-6 space-y-8">
+      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden pb-24 md:pb-0" style={{ minHeight: 0 }}>
+        {/* Left Panel - Information */}
+        <aside className="w-full lg:w-1/4 border-b lg:border-b-0 lg:border-r border-scrayva-dark-border bg-slate-900/50 overflow-y-auto p-4 lg:p-6 space-y-6 lg:space-y-8">
           <section>
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Input Prompt</h3>
-            <div className="bg-scrayva-card border border-scrayva-dark-border rounded-xl p-4">
-              <p className="text-sm leading-relaxed text-slate-300 italic">&ldquo;{task.prompt}&rdquo;</p>
+            <h3 className="text-[10px] lg:text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 lg:mb-3">Input Prompt</h3>
+            <div className="bg-scrayva-card border border-scrayva-dark-border rounded-xl p-3 lg:p-4">
+              <p className="text-xs lg:text-sm leading-relaxed text-slate-300 italic">&ldquo;{task.prompt}&rdquo;</p>
             </div>
           </section>
 
           {isFailed && task.error && (
             <section>
-              <h3 className="text-xs font-semibold text-red-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+              <h3 className="text-[10px] lg:text-xs font-semibold text-red-400 uppercase tracking-widest mb-2 lg:mb-3 flex items-center gap-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                 Execution Error
               </h3>
-              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
-                <p className="text-sm font-mono text-red-400 break-words whitespace-pre-wrap">{task.error}</p>
+              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 lg:p-4">
+                <p className="text-xs lg:text-sm font-mono text-red-400 break-words whitespace-pre-wrap">{task.error}</p>
               </div>
             </section>
           )}
 
-          <section>
+          <section className="hidden lg:block">
             <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Internal Notes</h3>
             <textarea className="w-full bg-scrayva-dark border border-scrayva-dark-border rounded-xl p-4 text-sm text-slate-300 focus:ring-1 focus:ring-sky-400 min-h-[120px] resize-none" placeholder="Add notes about this run..." value={notes} onChange={(e) => setNotes(e.target.value)} />
             {notes && (
@@ -362,6 +362,22 @@ export default function TaskDetail() {
           </div>
         </section>
       </main>
+      {/* Mobile Nav */}
+      <div className="md:hidden fixed bottom-0 left-0 w-full bg-scrayva-dark border-t border-scrayva-dark-border flex justify-around p-3 z-50 pb-safe">
+        <Link href="/dashboard" className="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-colors">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
+          <span className="text-[10px] font-medium">Dash</span>
+        </Link>
+        <Link href="/workflows" className="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-colors">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
+          <span className="text-[10px] font-medium">Flows</span>
+        </Link>
+        <Link href="/settings" className="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-colors">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
+          <span className="text-[10px] font-medium">Auto</span>
+        </Link>
+      </div>
+
       {toast && <Toast {...toast} onClose={() => showToast(null)} />}
     </div>
   );

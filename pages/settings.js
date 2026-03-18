@@ -118,7 +118,7 @@ export default function Settings() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-24 md:pb-10">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white">Settings</h1>
           <p className="text-slate-400 mt-2">Manage your account, API integrations, and workspace preferences.</p>
@@ -126,11 +126,11 @@ export default function Settings() {
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Tab Nav */}
-          <aside className="w-full lg:w-64 flex-shrink-0">
-            <nav className="flex flex-col space-y-1">
+          <aside className="w-full lg:w-64 flex-shrink-0 overflow-x-auto pb-4 lg:pb-0 scrollbar-hide">
+            <nav className="flex lg:flex-col space-x-2 lg:space-x-0 lg:space-y-1 w-max lg:w-full">
               {TABS.map((tab) => (
                 <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all text-left ${activeTab === tab.id ? 'bg-scrayva-purple text-white' : 'text-slate-400 hover:bg-scrayva-dark-lighter hover:text-white'}`}>
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all text-left whitespace-nowrap ${activeTab === tab.id ? 'bg-scrayva-purple text-white' : 'text-slate-400 hover:bg-scrayva-dark-lighter hover:text-white'}`}>
                   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                   </svg>
@@ -360,6 +360,23 @@ export default function Settings() {
           </div>
         </div>
       </footer>
+
+      {/* Mobile Nav */}
+      <div className="md:hidden fixed bottom-0 left-0 w-full bg-scrayva-dark border-t border-scrayva-dark-border flex justify-around p-3 z-50 pb-safe">
+        <Link href="/dashboard" className="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-colors">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
+          <span className="text-[10px] font-medium">Dash</span>
+        </Link>
+        <Link href="/workflows" className="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-colors">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
+          <span className="text-[10px] font-medium">Flows</span>
+        </Link>
+        <Link href="/settings" className="flex flex-col items-center gap-1 text-scrayva-purple">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
+          <span className="text-[10px] font-medium">Auto</span>
+        </Link>
+      </div>
+
       {toast && <Toast {...toast} onClose={() => showToast(null)} />}
     </div>
   );
