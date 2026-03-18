@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://scrayva.com/</loc>
+    <loc>https://scrayva.space/</loc>
     <lastmod>2026-03-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://scrayva.com/about</loc>
+    <loc>https://scrayva.space/about</loc>
     <lastmod>2026-03-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://scrayva.com/privacy</loc>
+    <loc>https://scrayva.space/privacy</loc>
     <lastmod>2026-03-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://scrayva.com/terms</loc>
+    <loc>https://scrayva.space/terms</loc>
     <lastmod>2026-03-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://scrayva.com/login</loc>
+    <loc>https://scrayva.space/login</loc>
     <lastmod>2026-03-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://scrayva.com/signup</loc>
+    <loc>https://scrayva.space/signup</loc>
     <lastmod>2026-03-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.9</priority>

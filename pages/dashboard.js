@@ -210,7 +210,7 @@ export default function Dashboard() {
               className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm border border-dark-border transition-all">
               Export CSV
             </button>
-            <a href="https://docs.scrayva.com" target="_blank" rel="noreferrer"
+            <a href="https://docs.scrayva.space" target="_blank" rel="noreferrer"
               className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-semibold transition-all">
               API Docs
             </a>

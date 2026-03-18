@@ -7,7 +7,7 @@ const SECTIONS = [
   {
     id: 'who-we-are',
     title: '1. Who we are',
-    content: `Scrayva is a web automation platform operated by Scrayva Automation Private Limited, a company incorporated in India. When this policy says "Scrayva," "we," "us," or "our," that's us.\n\nIf you have any questions about this policy, just email us at support@scrayva.com — we're a small team and we actually read every message.`,
+    content: `Scrayva is a web automation platform operated by Scrayva Automation Private Limited, a company incorporated in India. When this policy says "Scrayva," "we," "us," or "our," that's us.\n\nIf you have any questions about this policy, just email us at support@scrayva.space — we're a small team and we actually read every message.`,
   },
   {
     id: 'what-we-collect',
@@ -49,12 +49,12 @@ const SECTIONS = [
   {
     id: 'your-rights',
     title: '7. Your rights',
-    content: `You can, at any time:\n\n• **Access** the personal data we hold about you\n• **Correct** inaccurate information\n• **Delete** your account and all associated data\n• **Export** your extracted data\n\nTo exercise any of these rights, email us at support@scrayva.com.`,
+    content: `You can, at any time:\n\n• **Access** the personal data we hold about you\n• **Correct** inaccurate information\n• **Delete** your account and all associated data\n• **Export** your extracted data\n\nTo exercise any of these rights, email us at support@scrayva.space.`,
   },
   {
     id: 'security',
     title: '8. Security',
-    content: `We take reasonable technical and organisational measures to protect your data, including encryption in transit (HTTPS) and encryption at rest for sensitive values like API keys.\n\nNo system is perfectly secure. If you discover a vulnerability, please reach out to us responsibly at support@scrayva.com.`,
+    content: `We take reasonable technical and organisational measures to protect your data, including encryption in transit (HTTPS) and encryption at rest for sensitive values like API keys.\n\nNo system is perfectly secure. If you discover a vulnerability, please reach out to us responsibly at support@scrayva.space.`,
   },
   {
     id: 'changes',
@@ -104,7 +104,7 @@ export default function Privacy() {
           </p>
           <p className="text-slate-400 mt-2">
             Questions? Email us anytime at{' '}
-            <a href="mailto:support@scrayva.com" className="text-brand-accent hover:underline">support@scrayva.com</a>.
+            <a href="mailto:support@scrayva.space" className="text-brand-accent hover:underline">support@scrayva.space</a>.
           </p>
         </div>
 
@@ -167,7 +167,7 @@ export default function Privacy() {
           <div className="flex gap-6">
             <Link className="hover:text-white transition-colors" href="/about">About Us</Link>
             <Link className="hover:text-white transition-colors" href="/terms">Terms of Service</Link>
-            <a className="hover:text-white transition-colors" href="mailto:support@scrayva.com">Contact</a>
+            <a className="hover:text-white transition-colors" href="mailto:support@scrayva.space">Contact</a>
           </div>
         </div>
       </footer>

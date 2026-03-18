@@ -356,7 +356,7 @@ export default function Settings() {
           <div className="flex gap-6 text-sm text-slate-500">
             <Link className="hover:text-white transition-colors" href="/terms">Terms</Link>
             <Link className="hover:text-white transition-colors" href="/privacy">Privacy</Link>
-            <a className="hover:text-white transition-colors" href="mailto:support@scrayva.com">Contact</a>
+            <a className="hover:text-white transition-colors" href="mailto:support@scrayva.space">Contact</a>
           </div>
         </div>
       </footer>

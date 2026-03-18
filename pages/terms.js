@@ -7,7 +7,7 @@ const SECTIONS = [
   {
     id: 'agreement',
     title: '1. Your agreement with us',
-    content: `By creating a Scrayva account or using any part of the platform, you agree to these Terms of Service. These terms form a legally binding agreement between you and Scrayva Automation Private Limited, a company incorporated in India.\n\nIf you're using Scrayva on behalf of an organisation, you agree to these terms on behalf of that organisation.\n\nIf you have questions about anything here, just email support@scrayva.com.`,
+    content: `By creating a Scrayva account or using any part of the platform, you agree to these Terms of Service. These terms form a legally binding agreement between you and Scrayva Automation Private Limited, a company incorporated in India.\n\nIf you're using Scrayva on behalf of an organisation, you agree to these terms on behalf of that organisation.\n\nIf you have questions about anything here, just email support@scrayva.space.`,
   },
   {
     id: 'what-scrayva-is',
@@ -21,7 +21,7 @@ const SECTIONS = [
       { label: 'Accurate info', desc: 'Keep your account details current and accurate.' },
       { label: 'Keep it secure', desc: 'Your password is your responsibility. Don\'t share your account credentials.' },
       { label: 'One account', desc: 'Accounts are for individual use unless you\'re on a team or enterprise plan.' },
-      { label: 'Notify us', desc: 'If you suspect your account has been compromised, email us at support@scrayva.com right away.' },
+      { label: 'Notify us', desc: 'If you suspect your account has been compromised, email us at support@scrayva.space right away.' },
     ],
   },
   {
@@ -36,7 +36,7 @@ const SECTIONS = [
       { label: 'Subscription model', desc: 'Scrayva is billed monthly (or annually, where offered). Your subscription renews automatically at the end of each billing period.' },
       { label: 'Secure processing', desc: 'Payments are handled by our third-party payment processors. We never store your full card details.' },
       { label: 'Cancellation', desc: 'You can cancel your subscription at any time. You\'ll continue to have access until the end of your current billing period.' },
-      { label: 'Refunds', desc: 'We evaluate refund requests on a case-by-case basis. If you\'re unhappy with the service, email support@scrayva.com within 7 days of your charge and we\'ll do our best to make it right.' },
+      { label: 'Refunds', desc: 'We evaluate refund requests on a case-by-case basis. If you\'re unhappy with the service, email support@scrayva.space within 7 days of your charge and we\'ll do our best to make it right.' },
       { label: 'Price changes', desc: 'We\'ll give you at least 30 days\' notice before changing subscription prices.' },
     ],
   },
@@ -58,7 +58,7 @@ const SECTIONS = [
   {
     id: 'termination',
     title: '9. Termination',
-    content: `You can close your account at any time from the Settings page or by emailing support@scrayva.com. Upon closure, your data will be deleted within 30 days.\n\nWe may suspend or terminate accounts that violate these Terms, at our discretion. We'll try to give you notice first, except in cases of serious violations.`,
+    content: `You can close your account at any time from the Settings page or by emailing support@scrayva.space. Upon closure, your data will be deleted within 30 days.\n\nWe may suspend or terminate accounts that violate these Terms, at our discretion. We'll try to give you notice first, except in cases of serious violations.`,
   },
   {
     id: 'governing-law',
@@ -113,7 +113,7 @@ export default function Terms() {
           </p>
           <p className="text-slate-400 mt-2">
             Questions? Email us at{' '}
-            <a href="mailto:support@scrayva.com" className="text-brand-accent hover:underline">support@scrayva.com</a>.
+            <a href="mailto:support@scrayva.space" className="text-brand-accent hover:underline">support@scrayva.space</a>.
           </p>
         </div>
 
@@ -180,8 +180,8 @@ export default function Terms() {
         <div className="mt-16 p-8 bg-slate-800/30 border border-white/5 rounded-2xl text-center">
           <p className="text-white font-semibold mb-2">Still have questions?</p>
           <p className="text-slate-400 text-sm mb-4">We're happy to explain anything in plain language.</p>
-          <a href="mailto:support@scrayva.com" className="inline-flex items-center gap-2 px-6 py-3 bg-brand-primary hover:bg-brand-secondary text-white rounded-xl font-semibold transition-all text-sm">
-            Email support@scrayva.com
+          <a href="mailto:support@scrayva.space" className="inline-flex items-center gap-2 px-6 py-3 bg-brand-primary hover:bg-brand-secondary text-white rounded-xl font-semibold transition-all text-sm">
+            Email support@scrayva.space
           </a>
         </div>
       </main>
@@ -192,7 +192,7 @@ export default function Terms() {
           <div className="flex gap-6">
             <Link className="hover:text-white transition-colors" href="/about">About Us</Link>
             <Link className="hover:text-white transition-colors" href="/privacy">Privacy Policy</Link>
-            <a className="hover:text-white transition-colors" href="mailto:support@scrayva.com">Contact</a>
+            <a className="hover:text-white transition-colors" href="mailto:support@scrayva.space">Contact</a>
           </div>
         </div>
       </footer>
