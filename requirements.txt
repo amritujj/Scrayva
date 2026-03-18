@@ -1,8 +1,13 @@
 fastapi
-uvicorn
+uvicorn[standard]
 pydantic
 supabase
-browser-use
 langchain-google-genai
-playwright
 python-dotenv
+
+# browser-use drives a Playwright-controlled Chromium browser.
+# greenlet is a transitive dependency that requires a pre-built Windows wheel.
+# Pinning it here prevents pip from accidentally compiling it from source (which breaks on Windows).
+greenlet>=3.0.3
+playwright>=1.40.0
+browser-use==0.1.28

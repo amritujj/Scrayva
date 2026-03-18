@@ -1,11 +1,125 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #0a0f1e;
-  --foreground: #f8fafc;
+@layer base {
+  html {
+    @apply bg-[#0b0f1a] text-slate-200;
+  }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
+/* ─── Custom animations ─── */
+@keyframes float {
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
 }
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+@layer utilities {
+  .animate-float     { animation: float 4s ease-in-out infinite; }
+  .animate-pulse-slow { animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+}
+
+/* ─── Glassmorphism helper ─── */
+.glass-effect {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ─── Gradient text ─── */
+.gradient-text {
+  background: linear-gradient(135deg, #d8b4fe 0%, #8b5cf6 50%, #6366f1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Hero radial glow blob ─── */
+.hero-glow {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(0,0,0,0) 70%);
+  filter: blur(60px);
+  z-index: -1;
+}
+
+/* ─── Glass card (workflows page) ─── */
+.glass-card {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ─── Custom scrollbars ─── */
+::-webkit-scrollbar         { width: 6px; height: 6px; }
+::-webkit-scrollbar-track   { background: #1e293b; }
+::-webkit-scrollbar-thumb   { background: #4c1d95; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #7c3aed; }
+
+/* ─── Template card hover lift ─── */
+.template-card:hover {
+  border-color: #8b5cf6;
+  transform: translateY(-4px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Hide scrollbar utility ─── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ─────────────────────────────────────────
+   SCROLL REVEAL ANIMATIONS
+   Elements start hidden; JS adds .visible
+   when they enter the viewport.
+───────────────────────────────────────── */
+
+/* Base: fade up */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(48px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Slide from left */
+[data-reveal="left"] {
+  transform: translateX(-56px);
+}
+
+/* Slide from right */
+[data-reveal="right"] {
+  transform: translateX(56px);
+}
+
+/* Scale in */
+[data-reveal="scale"] {
+  transform: scale(0.88) translateY(32px);
+}
+
+/* Visible state (added by IntersectionObserver) */
+[data-reveal].visible {
+  opacity: 1;
+  transform: translate(0, 0) scale(1);
+}
+
+/* Stagger delays via data-delay attribute */
+[data-delay="100"] { transition-delay: 100ms; }
+[data-delay="150"] { transition-delay: 150ms; }
+[data-delay="200"] { transition-delay: 200ms; }
+[data-delay="300"] { transition-delay: 300ms; }
+[data-delay="400"] { transition-delay: 400ms; }
+[data-delay="500"] { transition-delay: 500ms; }
+[data-delay="600"] { transition-delay: 600ms; }
+[data-delay="700"] { transition-delay: 700ms; }
+[data-delay="800"] { transition-delay: 800ms; }
+

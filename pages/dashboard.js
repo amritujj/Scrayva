@@ -1,275 +1,299 @@
-import { useState, useEffect } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { supabase } from '@/lib/supabase';
-import { LogOut, Play, Loader2, Bot, Download, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import Toast, { useToast } from '../components/Toast';
+import useScrollReveal from '../hooks/useScrollReveal';
+
+const QUICK_TEMPLATES = [
+  { label: '🔍 Find Leads',         prompt: 'Search LinkedIn for B2B SaaS founders in India with 10–50 employees. Extract name, role, company, and LinkedIn URL.' },
+  { label: '📊 Competitor Prices',  prompt: 'Go to the pricing pages of Apify, Browserless, and ScrapingBee. Extract each plan name, price, and feature list.' },
+  { label: '📰 News Digest',        prompt: 'Scrape the top 5 articles from TechCrunch and Hacker News published today. Return title, URL, and a 2-sentence summary.' },
+];
 
 export default function Dashboard() {
-  const router = useRouter();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [prompt, setPrompt] = useState('');
-  const [running, setRunning] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [tasks, setTasks] = useState([]);
-  const [error, setError] = useState(null);
+  const [isLoadingTasks, setIsLoadingTasks] = useState(true);
+  const [user, setUser] = useState(null);
+  const [credits, setCredits] = useState(null);
+  const [tier, setTier] = useState('Free');
+  
+  const promptRef = useRef(null);
+  const router = useRouter();
+  const { toast, showToast } = useToast();
+  useScrollReveal();
+
+  const fetchTasks = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers = session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {};
+
+      const res = await fetch('/api/tasks', { headers });
+      if (res.ok) {
+        const data = await res.json();
+        setTasks(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch tasks:", err);
+    } finally {
+      setIsLoadingTasks(false);
+    }
+  };
+
+  // Poll tasks every 3 seconds
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setUser(user);
+        setTier(user.user_metadata?.tier || 'Free');
+        setCredits(user.user_metadata?.credits ?? (user.user_metadata?.tier === 'Pro' ? 50 : 5));
+      }
+    });
+
+    fetchTasks();
+    const interval = setInterval(fetchTasks, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleTemplateClick = (templatePrompt) => {
+    setPrompt(templatePrompt);
+    promptRef.current?.focus();
+    promptRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  const submitTask = async (taskPrompt) => {
+    if (!taskPrompt.trim()) { showToast('Please enter a task prompt first.', 'error'); return; }
+    setIsSubmitting(true);
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers = { 'Content-Type': 'application/json' };
+      if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
+
+      const res = await fetch('/api/tasks', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ prompt: taskPrompt }),
+      });
+      
+      if (res.ok) {
+        const task = await res.json();
+        setCredits(prev => Math.max(0, (prev || 0) - 1));
+        showToast('Task queued! Opening details...', 'success');
+        setPrompt('');
+        setTimeout(() => router.push(`/tasks/${task.id}`), 800);
+      } else {
+        const err = await res.json();
+        showToast(`Error: ${err.error || 'Failed to submit task'}`, 'error');
+      }
+    } catch {
+      showToast('Network error while saving task.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push('/login');
-      } else {
-        setUser(session.user);
-        fetchTasks(session.user.id);
-      }
-      setLoading(false);
-    };
-
-    checkAuth();
-    
-    // Set up realtime subscription for updates
-    const subscription = supabase
-      .channel('tasks_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, (payload) => {
-        if (user) fetchTasks(user.id);
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(subscription);
-    };
-  }, [router, user]);
-
-  const fetchTasks = async (userId) => {
-    try {
-      const { data, error } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-        
-      if (error) throw error;
-      if (data) setTasks(data);
-    } catch (err) {
-      console.error('Error fetching tasks:', err);
+    if (router.isReady && router.query.prompt && router.query.template) {
+      const templatePrompt = router.query.prompt;
+      // Strip query parameters to prevent duplicate submissions on refresh
+      router.replace('/dashboard', undefined, { shallow: true });
+      setPrompt(templatePrompt);
+      submitTask(templatePrompt);
     }
+  }, [router.isReady, router.query.prompt, router.query.template]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    submitTask(prompt);
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/');
-  };
-
-  const handleRunAgent = async () => {
-    if (!prompt.trim() || !user) return;
-    
-    setRunning(true);
-    setError(null);
-    
-    try {
-      // 1. Insert into Supabase
-      const { data, error: insertError } = await supabase
-        .from('tasks')
-        .insert([
-          { 
-            user_id: user.id, 
-            prompt, 
-            status: 'queued' 
-          }
-        ])
-        .select()
-        .single();
-        
-      if (insertError) throw insertError;
-      
-      const taskId = data.id;
-      setPrompt('');
-      fetchTasks(user.id); // Update UI immediately
-      
-      // 2. Call Worker via fetch without awaiting to avoid blocking the UI
-      const workerUrl = process.env.NEXT_PUBLIC_WORKER_URL || 'http://localhost:8000';
-      fetch(`${workerUrl}/run-agent`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, task_id: taskId })
-      }).catch(err => console.error("Worker call failed:", err));
-      
-    } catch (err) {
-      setError(err.message || 'Failed to submit task');
-    } finally {
-      setRunning(false);
+  const handleExportCSV = () => {
+    if (tasks.length === 0) {
+      showToast('No tasks to export.', 'info');
+      return;
     }
+    const header = "ID,Prompt,Status,Created At\n";
+    const rows = tasks.map(t => `"${t.id}","${t.prompt.replace(/"/g, '""')}","${t.status}","${new Date(t.created_at).toLocaleString()}"`).join("\n");
+    const blob = new Blob([header + rows], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'scrayva-tasks.csv'; a.click();
+    URL.revokeObjectURL(url);
+    showToast('Task history downloaded!', 'success');
   };
 
-  const downloadCSV = (resultData) => {
-    if (!resultData) return;
-    
-    // In a real app we'd parse the result JSON and convert to CSV format
-    // For this simple demo, we'll just encode the JSON as a text file download
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(resultData, null, 2));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href",     dataStr);
-    downloadAnchorNode.setAttribute("download", "result.json");
-    document.body.appendChild(downloadAnchorNode); // required for firefox
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
+  const getStatusBadge = (status) => {
+    const s = status?.toLowerCase() || 'unknown';
+    if (s === 'completed') return <span className="px-2 py-1 text-[10px] font-bold rounded border bg-green-500/10 text-green-400 border-green-500/20 uppercase tracking-wider">Completed</span>;
+    if (s === 'failed')    return <span className="px-2 py-1 text-[10px] font-bold rounded border bg-red-500/10 text-red-400 border-red-500/20 uppercase tracking-wider">Failed</span>;
+    if (s === 'running')   return <span className="px-2 py-1 text-[10px] font-bold rounded border bg-sky-500/10 text-sky-400 border-sky-500/20 uppercase tracking-wider flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>Running</span>;
+    return <span className="px-2 py-1 text-[10px] font-bold rounded border bg-slate-500/10 text-slate-400 border-slate-500/20 uppercase tracking-wider">{s}</span>;
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#3b82f6] animate-spin" />
-      </div>
-    );
-  }
-
-  // Prevent flash of protected content before redirect
-  if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-slate-200 font-sans">
-      <Head>
-        <title>Dashboard - Scrayva</title>
-      </Head>
+    <div className="min-h-screen flex bg-dark-bg text-white">
+      <Head><title>Scrayva | AI Operations Dashboard</title></Head>
 
-      {/* Header */}
-      <header className="border-b border-white/10 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#3b82f6] flex items-center justify-center shadow-[0_0_10px_rgba(59,130,246,0.5)]">
-              <span className="font-bold text-white text-lg leading-none">S</span>
+      {/* Sidebar */}
+      <aside className="w-64 border-r border-dark-border flex flex-col fixed h-full bg-dark-bg z-50">
+        <div className="p-6">
+          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+              <span className="font-bold text-white">S</span>
             </div>
-            <span className="text-xl font-bold tracking-tight text-white">Dashboard</span>
+            <h1 className="text-xl font-bold tracking-tight">Scrayva</h1>
+          </Link>
+        </div>
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+          {[
+            { label: 'Dashboard',      href: '/dashboard',  active: true,  icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+            { label: 'Templates',      href: '/templates',  active: false, icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z' },
+            { label: 'Workflows',      href: '/workflows',  active: false, icon: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' },
+            { label: 'Settings',       href: '/settings',   active: false, icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
+          ].map((item) => (
+            <Link key={item.href} href={item.href}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${item.active ? 'bg-purple-600/20 text-purple-400' : 'text-dark-muted hover:bg-white/5 hover:text-white'}`}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d={item.icon} strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+              </svg>
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+        <div className="p-4 border-t border-dark-border space-y-4">
+          <div className="bg-white/5 rounded-xl p-4">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Compute Usage</span>
+              <span className="text-xs font-bold text-white">{credits !== null ? credits : '-'} Credits</span>
+            </div>
+            <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+              <div 
+                className={`h-1.5 rounded-full ${credits > 0 ? 'bg-purple-500' : 'bg-red-500'}`} 
+                style={{ width: `${Math.min(100, ((credits || 0) / (tier === 'Pro' ? 50 : 5)) * 100)}%` }}
+              ></div>
+            </div>
           </div>
-          
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-slate-400 hidden sm:inline-block">
-              {user.email}
-            </span>
-            <button 
-              onClick={handleLogout}
-              className="text-sm flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 border border-transparent hover:border-white/10 transition-colors text-slate-300"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign out
+
+          <Link href="/settings" className="flex items-center gap-3 p-3 hover:bg-white/5 rounded-xl transition-all">
+            <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-sm font-bold">
+              {user?.email?.[0]?.toUpperCase() || 'U'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{user?.email || 'My Account'}</p>
+              <p className="text-xs text-dark-muted">{tier} Plan</p>
+            </div>
+          </Link>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <main className="flex-1 ml-64 p-8 min-w-0 overflow-x-hidden">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8" data-reveal="fade-up">
+          <div>
+            <h2 className="text-3xl font-bold">Operations Hub</h2>
+            <p className="text-dark-muted mt-1">Automate any web task with a single prompt.</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={handleExportCSV}
+              className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm border border-dark-border transition-all">
+              Export CSV
             </button>
+            <a href="https://docs.scrayva.com" target="_blank" rel="noreferrer"
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-semibold transition-all">
+              API Docs
+            </a>
           </div>
         </div>
-      </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
-        {/* Task Input Area */}
-        <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl mb-8 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#3b82f6] to-cyan-400"></div>
-          
-          <h2 className="text-xl font-semibold text-white mb-2 flex items-center gap-2">
-            <Bot className="w-5 h-5 text-blue-400" />
-            New Automation Task
-          </h2>
-          <p className="text-sm text-slate-400 mb-6">
-            Describe what you want the browser agent to do in plain English.
-          </p>
-          
-          {error && (
-            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-200">
-              {error}
-            </div>
-          )}
-          
+        {/* Quick Templates */}
+        <div className="mb-6 flex flex-wrap gap-3" data-reveal="fade-up" data-delay="100">
+          {QUICK_TEMPLATES.map((t) => (
+            <button key={t.label} onClick={() => handleTemplateClick(t.prompt)}
+              className="px-4 py-2 bg-white/5 hover:bg-purple-600/20 hover:text-purple-300 border border-dark-border hover:border-purple-600/40 rounded-full text-sm transition-all whitespace-nowrap">
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Prompt Form */}
+        <form onSubmit={handleSubmit} className="bg-dark-card border border-dark-border rounded-2xl p-6 mb-8" data-reveal="fade-up" data-delay="200">
+          <label className="block text-sm font-medium text-dark-muted mb-3">New Task Prompt</label>
           <textarea
+            ref={promptRef}
+            rows={4}
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            disabled={running}
-            placeholder="e.g. Go to ycombinator.com, search for the top 5 AI startups, and extract their names and descriptions..."
-            className="w-full h-32 p-4 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent transition-all lg:text-lg resize-none mb-4"
+            placeholder="e.g. Go to ycombinator.com/companies and collect the names and descriptions of 10 recent AI startups."
+            className="w-full bg-dark-bg border border-dark-border rounded-xl p-4 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
           />
-          
-          <div className="flex justify-end">
-            <button
-              onClick={handleRunAgent}
-              disabled={running || !prompt.trim()}
-              className="flex items-center gap-2 bg-[#3b82f6] hover:bg-blue-600 text-white px-6 py-2.5 rounded-xl font-medium shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {running ? (
+          <div className="flex justify-end mt-4">
+            <button type="submit" disabled={isSubmitting}
+              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all flex items-center gap-2">
+              {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Queuing Task...
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Launching...
                 </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4 fill-current" />
-                  Run Agent
-                </>
-              )}
+              ) : 'Launch Operation →'}
             </button>
           </div>
-        </section>
+        </form>
 
-        {/* Task History */}
-        <section>
-          <h3 className="text-lg font-medium text-slate-200 mb-4 px-1">Task History</h3>
-          
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-            {tasks.length === 0 ? (
-              <div className="p-8 text-center text-slate-500">
-                <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mx-auto mb-4">
-                  <Clock className="w-8 h-8 text-slate-600" />
-                </div>
-                <p>No tasks yet. Start an automation above!</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-slate-300">
-                  <thead className="bg-slate-950 border-b border-slate-800 text-slate-400">
-                    <tr>
-                      <th className="px-6 py-4 font-medium">Prompt</th>
-                      <th className="px-6 py-4 font-medium w-32">Status</th>
-                      <th className="px-6 py-4 font-medium w-40 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800">
-                    {tasks.map((task) => (
-                      <tr key={task.id} className="hover:bg-slate-800/50 transition-colors">
-                        <td className="px-6 py-4">
-                          <p className="line-clamp-2" title={task.prompt}>
-                            {task.prompt}
-                          </p>
-                          <span className="text-xs text-slate-500 mt-1 block">
-                            {new Date(task.created_at).toLocaleString()}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
-                            task.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                            task.status === 'failed' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                            'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                          }`}>
-                            {task.status === 'completed' && <CheckCircle2 className="w-3.5 h-3.5" />}
-                            {task.status === 'failed' && <XCircle className="w-3.5 h-3.5" />}
-                            {task.status === 'queued' && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                            {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          {task.status === 'completed' && task.result && (
-                            <button
-                              onClick={() => downloadCSV(task.result)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-slate-200 rounded-lg border border-white/10 transition-colors"
-                            >
-                              <Download className="w-3.5 h-3.5" />
-                              Results
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+        {/* Recent Tasks */}
+        <div className="bg-dark-card border border-dark-border rounded-2xl p-6" data-reveal="fade-up" data-delay="300">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-white">Recent Tasks</h3>
+            {isLoadingTasks && (
+              <span className="text-xs text-dark-muted flex items-center gap-2">
+                <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                Loading...
+              </span>
             )}
           </div>
-        </section>
+          
+          <div className="space-y-3">
+            {tasks.length > 0 ? (
+              tasks.map((task) => (
+                <div key={task.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-dark-bg rounded-xl border border-dark-border hover:border-dark-muted transition-colors group">
+                  <div className="flex-1 min-w-0 pr-4">
+                    <div className="flex items-center gap-3 mb-1.5">
+                      <span className="text-xs font-mono text-dark-muted bg-white/5 px-2 py-0.5 rounded">#{task.id.split('-')[0]}</span>
+                      {getStatusBadge(task.status)}
+                      <span className="text-xs text-dark-muted">{new Date(task.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                    <p className="text-sm text-slate-300 truncate font-medium">{task.prompt}</p>
+                    {task.error && <p className="text-xs text-red-400 mt-1 truncate">{task.error}</p>}
+                  </div>
+                  <div className="flex-shrink-0">
+                    <Link href={`/tasks/${task.id}`}
+                      className="px-4 py-2 bg-white/5 hover:bg-purple-600 hover:text-white text-sm font-semibold rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 flex items-center gap-1">
+                      View details <span aria-hidden="true">&rarr;</span>
+                    </Link>
+                  </div>
+                </div>
+              ))
+            ) : (
+              !isLoadingTasks && (
+                <div className="text-center py-12 text-dark-muted">
+                  <svg className="w-12 h-12 mx-auto mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                  </svg>
+                  <p className="text-sm">No tasks yet. Launch an operation above!</p>
+                </div>
+              )
+            )}
+          </div>
+        </div>
       </main>
+
+      {toast && <Toast {...toast} onClose={() => showToast(null)} />}
     </div>
   );
 }
