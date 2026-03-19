@@ -83,6 +83,8 @@ export default function Privacy() {
             <span className="text-lg font-bold text-white">Scrayva</span>
           </Link>
           <div className="flex items-center gap-6 text-sm">
+            <Link href="/" className="text-slate-400 hover:text-white transition-colors">Home</Link>
+            <Link href="/blog" className="text-slate-400 hover:text-white transition-colors">Blog</Link>
             <Link href="/about" className="text-slate-400 hover:text-white transition-colors">About</Link>
             <Link href="/terms" className="text-slate-400 hover:text-white transition-colors">Terms</Link>
             <Link href="/dashboard" className="bg-brand-primary hover:bg-brand-secondary text-white px-4 py-2 rounded-full transition-all text-sm font-semibold">
@@ -165,6 +167,7 @@ export default function Privacy() {
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
           <span>© 2026 Scrayva Automation Private Limited. All rights reserved.</span>
           <div className="flex gap-6">
+            <Link className="hover:text-white transition-colors" href="/blog">Blog</Link>
             <Link className="hover:text-white transition-colors" href="/about">About Us</Link>
             <Link className="hover:text-white transition-colors" href="/terms">Terms of Service</Link>
             <a className="hover:text-white transition-colors" href="mailto:support@scrayva.space">Contact</a>

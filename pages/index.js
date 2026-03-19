@@ -70,6 +70,7 @@ export default function Landing() {
               <a className="hover:text-brand-primary transition-colors" href="#features">Features</a>
               <a className="hover:text-brand-primary transition-colors" href="#workflow">Workflow</a>
               <a className="hover:text-brand-primary transition-colors" href="#pricing">Pricing</a>
+              <Link href="/blog" className="hover:text-brand-primary transition-colors">Blog</Link>
               {!user ? (
                 <Link href="/login" className="text-slate-400 hover:text-white transition-colors">Login</Link>
               ) : (
@@ -454,6 +455,7 @@ export default function Landing() {
               <ul className="text-slate-500 space-y-4 text-sm">
                 <li><a className="hover:text-brand-primary transition-colors" href="#features">Features</a></li>
                 <li><a className="hover:text-brand-primary transition-colors" href="#pricing">Pricing</a></li>
+                <li><Link className="hover:text-brand-primary transition-colors" href="/blog">Blog</Link></li>
                 <li><Link className="hover:text-brand-primary transition-colors" href="/dashboard">Dashboard</Link></li>
               </ul>
             </div>

@@ -23,16 +23,16 @@ export default function Blog() {
       {/* Top Navigation Shell */}
       <nav className="fixed top-0 w-full z-50 bg-zinc-950/60 backdrop-blur-3xl border-b border-white/10 shadow-[0_0_40px_-5px_rgba(140,37,244,0.08)]">
         <div className="flex justify-between items-center max-w-7xl mx-auto px-6 h-20">
-          <div className="text-2xl font-black tracking-tighter text-white uppercase font-manrope">Scrayva</div>
+          <Link href="/" className="text-2xl font-black tracking-tighter text-white uppercase font-manrope">Scrayva</Link>
           <div className="hidden md:flex items-center space-x-8">
-            <a className="font-manrope tracking-tight font-semibold text-zinc-400 hover:text-white transition-colors" href="#">Features</a>
-            <a className="font-manrope tracking-tight font-semibold text-zinc-400 hover:text-white transition-colors" href="#">Solutions</a>
-            <a className="font-manrope tracking-tight font-semibold text-violet-400 border-b-2 border-violet-500 pb-1" href="#">Resources</a>
-            <a className="font-manrope tracking-tight font-semibold text-zinc-400 hover:text-white transition-colors" href="#">Pricing</a>
+            <Link className="font-manrope tracking-tight font-semibold text-zinc-400 hover:text-white transition-colors" href="/#features">Features</Link>
+            <Link className="font-manrope tracking-tight font-semibold text-zinc-400 hover:text-white transition-colors" href="/about">About</Link>
+            <Link className="font-manrope tracking-tight font-semibold text-violet-400 border-b-2 border-violet-500 pb-1" href="/blog">Blog</Link>
+            <Link className="font-manrope tracking-tight font-semibold text-zinc-400 hover:text-white transition-colors" href="/#pricing">Pricing</Link>
           </div>
           <div className="flex items-center space-x-4">
-            <button className="px-5 py-2 text-sm font-semibold text-zinc-300 hover:text-white transition-colors">Login</button>
-            <button className="px-6 py-2.5 bg-gradient-to-r from-primary-dim to-secondary-dim text-on-primary font-bold rounded-xl active:scale-95 transition-all duration-300 shadow-lg shadow-primary/20">Get Started</button>
+            <Link href="/login" className="px-5 py-2 text-sm font-semibold text-zinc-300 hover:text-white transition-colors">Login</Link>
+            <Link href="/signup" className="px-6 py-2.5 bg-gradient-to-r from-primary-dim to-secondary-dim text-on-primary font-bold rounded-xl active:scale-95 transition-all duration-300 shadow-lg shadow-primary/20">Get Started</Link>
           </div>
         </div>
       </nav>
@@ -304,22 +304,22 @@ export default function Blog() {
             </p>
             <div className="flex gap-4 mt-8">
               <a className="text-zinc-500 hover:text-primary transition-colors" href="#"><span className="material-symbols-outlined">share</span></a>
-              <a className="text-zinc-500 hover:text-primary transition-colors" href="#"><span className="material-symbols-outlined">mail</span></a>
+              <a className="text-zinc-500 hover:text-primary transition-colors" href="mailto:support@scrayva.space"><span className="material-symbols-outlined">mail</span></a>
               <a className="text-zinc-500 hover:text-primary transition-colors" href="#"><span className="material-symbols-outlined">terminal</span></a>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-8">
             <div className="space-y-4">
               <h4 className="text-white font-bold text-sm mb-6">Legal</h4>
-              <a className="block text-zinc-500 hover:text-violet-400 transition-colors font-manrope text-sm hover:translate-x-1" href="#">Privacy Policy</a>
-              <a className="block text-zinc-500 hover:text-violet-400 transition-colors font-manrope text-sm hover:translate-x-1" href="#">Terms of Service</a>
-              <a className="block text-zinc-500 hover:text-violet-400 transition-colors font-manrope text-sm hover:translate-x-1" href="#">Security</a>
+              <Link className="block text-zinc-500 hover:text-violet-400 transition-colors font-manrope text-sm hover:translate-x-1" href="/privacy">Privacy Policy</Link>
+              <Link className="block text-zinc-500 hover:text-violet-400 transition-colors font-manrope text-sm hover:translate-x-1" href="/terms">Terms of Service</Link>
+              <a className="block text-zinc-500 hover:text-violet-400 transition-colors font-manrope text-sm hover:translate-x-1" href="mailto:support@scrayva.space">Security</a>
             </div>
             <div className="space-y-4">
               <h4 className="text-white font-bold text-sm mb-6">Platform</h4>
-              <a className="block text-zinc-500 hover:text-violet-400 transition-colors font-manrope text-sm hover:translate-x-1" href="#">Documentation</a>
-              <a className="block text-zinc-500 hover:text-violet-400 transition-colors font-manrope text-sm hover:translate-x-1" href="#">API Status</a>
-              <a className="block text-zinc-500 hover:text-violet-400 transition-colors font-manrope text-sm hover:translate-x-1" href="#">Changelog</a>
+              <Link className="block text-zinc-500 hover:text-violet-400 transition-colors font-manrope text-sm hover:translate-x-1" href="/dashboard">Dashboard</Link>
+              <Link className="block text-zinc-500 hover:text-violet-400 transition-colors font-manrope text-sm hover:translate-x-1" href="/about">About Us</Link>
+              <Link className="block text-zinc-500 hover:text-violet-400 transition-colors font-manrope text-sm hover:translate-x-1" href="/#pricing">Pricing</Link>
             </div>
           </div>
         </div>
