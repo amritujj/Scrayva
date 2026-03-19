@@ -140,7 +140,7 @@ export default function Blog() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Post 1 */}
-          <Link href="/blog" className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
+          <Link href="/blog/10-web-research-tasks" className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
             <div className="aspect-[16/10] overflow-hidden">
               <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Student studying with computer and automation icons" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCN1XqXBrO57monrTjS5WgbgrYk9F4ppnl34pZK2i9HIzNKYHjtX00UZkRR7V4SdpAEaqM6U_F--2ucnNaHCBQiWaWxcZFxl02eSWAAxvmhYitq3hoEgs8y5-yyrl2_y6LblxvvwBxcM1K4rqa14nlhsYc2nrJS9kOUAznIZCKplF8KzVYbQUwA-3xI0nG1sqTF2RW_pbBmdd2fx7esRsAr_GaRD9b-bPVWp6kkA8Gr6UQLkbHjtTW01PSbavdouoHFcBMdbyr9YvA" alt="Student matching graphic" />
             </div>
