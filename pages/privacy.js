@@ -88,7 +88,7 @@ export default function Privacy() {
           </p>
           <p className="text-slate-400 mt-2">
             Questions? Email us anytime at{' '}
-            <a href="mailto:support@scrayva.space" className="text-brand-accent hover:underline">support@scrayva.space</a>.
+            <a href="mailto:support@scrayva.space?subject=Privacy%20Inquiry" className="text-brand-accent hover:underline">support@scrayva.space</a>.
           </p>
         </div>
 
@@ -152,7 +152,7 @@ export default function Privacy() {
             <Link className="hover:text-white transition-colors" href="/blog">Blog</Link>
             <Link className="hover:text-white transition-colors" href="/about">About Us</Link>
             <Link className="hover:text-white transition-colors" href="/terms">Terms of Service</Link>
-            <a className="hover:text-white transition-colors" href="mailto:support@scrayva.space">Contact</a>
+            <a className="hover:text-white transition-colors" href="mailto:support@scrayva.space?subject=Contact%20Support">Contact</a>
           </div>
         </div>
       </footer>

@@ -420,7 +420,7 @@ export default function Landing() {
               <h4 className="text-white font-semibold mb-6">Company</h4>
               <ul className="text-slate-500 space-y-4 text-sm">
                 <li><Link className="hover:text-brand-primary transition-colors" href="/about">About Us</Link></li>
-                <li><a className="hover:text-brand-primary transition-colors" href="mailto:support@scrayva.space">Contact</a></li>
+                <li><a className="hover:text-brand-primary transition-colors" href="mailto:support@scrayva.space?subject=Contact%20Scrayva">Contact</a></li>
                 <li><Link className="hover:text-brand-primary transition-colors" href="/privacy">Privacy</Link></li>
                 <li><Link className="hover:text-brand-primary transition-colors" href="/terms">Terms</Link></li>
               </ul>

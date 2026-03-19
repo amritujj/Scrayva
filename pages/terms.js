@@ -97,7 +97,7 @@ export default function Terms() {
           </p>
           <p className="text-slate-400 mt-2">
             Questions? Email us at{' '}
-            <a href="mailto:support@scrayva.space" className="text-brand-accent hover:underline">support@scrayva.space</a>.
+            <a href="mailto:support@scrayva.space?subject=Terms%20of%20Service%20Inquiry" className="text-brand-accent hover:underline">support@scrayva.space</a>.
           </p>
         </div>
 
@@ -164,7 +164,7 @@ export default function Terms() {
         <div className="mt-16 p-8 bg-slate-800/30 border border-white/5 rounded-2xl text-center">
           <p className="text-white font-semibold mb-2">Still have questions?</p>
           <p className="text-slate-400 text-sm mb-4">We're happy to explain anything in plain language.</p>
-          <a href="mailto:support@scrayva.space" className="inline-flex items-center gap-2 px-6 py-3 bg-brand-primary hover:bg-brand-secondary text-white rounded-xl font-semibold transition-all text-sm">
+          <a href="mailto:support@scrayva.space?subject=Legal%20Inquiry" className="inline-flex items-center gap-2 px-6 py-3 bg-brand-primary hover:bg-brand-secondary text-white rounded-xl font-semibold transition-all text-sm">
             Email support@scrayva.space
           </a>
         </div>
@@ -177,7 +177,7 @@ export default function Terms() {
             <Link className="hover:text-white transition-colors" href="/blog">Blog</Link>
             <Link className="hover:text-white transition-colors" href="/about">About Us</Link>
             <Link className="hover:text-white transition-colors" href="/privacy">Privacy Policy</Link>
-            <a className="hover:text-white transition-colors" href="mailto:support@scrayva.space">Contact</a>
+            <a className="hover:text-white transition-colors" href="mailto:support@scrayva.space?subject=Contact%20Support">Contact</a>
           </div>
         </div>
       </footer>

@@ -109,7 +109,7 @@ export default function About() {
             <Link href="/dashboard" className="px-8 py-4 bg-brand-primary hover:bg-brand-secondary text-white rounded-xl font-bold transition-all shadow-xl shadow-brand-primary/30">
               Start for Free
             </Link>
-            <a href="mailto:support@scrayva.space" className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold transition-all">
+            <a href="mailto:support@scrayva.space?subject=General%20Inquiry" className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold transition-all">
               Say Hello 👋
             </a>
           </div>
@@ -124,7 +124,7 @@ export default function About() {
             <Link className="hover:text-white transition-colors" href="/blog">Blog</Link>
             <Link className="hover:text-white transition-colors" href="/privacy">Privacy Policy</Link>
             <Link className="hover:text-white transition-colors" href="/terms">Terms of Service</Link>
-            <a className="hover:text-white transition-colors" href="mailto:support@scrayva.space">Contact</a>
+            <a className="hover:text-white transition-colors" href="mailto:support@scrayva.space?subject=Contact%20Support">Contact</a>
           </div>
         </div>
       </footer>

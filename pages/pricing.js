@@ -175,7 +175,7 @@ export default function Pricing() {
       {/* Basic Footer */}
       <footer className="w-full py-12 mt-10 border-t border-white/5 bg-[#070b14]/50 text-center">
         <p className="text-slate-500 text-sm">
-          Secured by Razorpay. All transactions are fully encrypted. Need custom limits? <a href="mailto:support@scrayva.space" className="text-brand-accent hover:underline">Contact us</a>.
+          Secured by Razorpay. All transactions are fully encrypted. Need custom limits? <a href="mailto:support@scrayva.space?subject=Custom%20Plan%20Inquiry" className="text-brand-accent hover:underline">Contact us</a>.
         </p>
       </footer>
     </div>
