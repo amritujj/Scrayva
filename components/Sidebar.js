@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import Logo from './Logo';
 import { supabase } from '@/lib/supabase';
 import { BarChart3, LayoutDashboard, Settings, Library, Bot, LogOut } from 'lucide-react';
 
@@ -22,13 +23,9 @@ export default function Sidebar() {
   return (
     <aside className="w-64 border-r border-dark-border flex flex-col fixed h-full bg-dark-bg z-50">
       <div className="p-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(147,51,234,0.4)]">
-            <span className="font-bold text-white leading-none">S</span>
-          </div>
-          <h1 className="text-xl font-bold tracking-tight text-white">Scrayva</h1>
-        </div>
+        <Logo />
       </div>
+
       
       <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto mt-2">
         {navItems.map((item) => {

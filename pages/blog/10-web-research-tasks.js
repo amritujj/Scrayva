@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import Link from 'next/link';
+import Navbar from '../../components/Navbar';
 
 export default function BlogPost() {
   return (
@@ -27,30 +28,8 @@ export default function BlogPost() {
       `}</style>
 
       {/* Top Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 glass-effect border-b border-white/5 bg-[#0b0f1a]/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M13 10V3L4 14h7v7l9-11h-7z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-              </svg>
-            </div>
-            <span className="text-lg font-bold text-white font-headline">Scrayva</span>
-          </Link>
-          <div className="hidden md:flex items-center gap-6 text-sm">
-            <Link href="/" className="text-slate-400 hover:text-white transition-colors font-medium">Home</Link>
-            <Link href="/about" className="text-slate-400 hover:text-white transition-colors font-medium">About</Link>
-            <Link href="/blog" className="text-brand-accent transition-colors font-semibold">Blog</Link>
-            <Link href="/pricing" className="text-slate-400 hover:text-white transition-colors font-medium">Pricing</Link>
-          </div>
-          <div className="flex items-center gap-4 text-sm">
-            <Link href="/login" className="text-slate-400 hover:text-white transition-colors font-medium hidden sm:block">Login</Link>
-            <Link href="/signup" className="bg-brand-primary hover:bg-brand-secondary text-white px-5 py-2 rounded-full transition-all text-sm font-semibold shadow-lg shadow-brand-primary/20">
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
+
 
       <main className="pt-32 pb-24">
         {/* Article Header */}

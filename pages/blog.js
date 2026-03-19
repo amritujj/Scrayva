@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import Link from 'next/link';
+import Navbar from '../components/Navbar';
 
 export default function Blog() {
   return (
@@ -21,21 +22,8 @@ export default function Blog() {
       `}</style>
 
       {/* Top Navigation Shell */}
-      <nav className="fixed top-0 w-full z-50 bg-zinc-950/60 backdrop-blur-3xl border-b border-white/10 shadow-[0_0_40px_-5px_rgba(140,37,244,0.08)]">
-        <div className="flex justify-between items-center max-w-7xl mx-auto px-6 h-20">
-          <Link href="/" className="text-2xl font-black tracking-tighter text-white uppercase font-manrope">Scrayva</Link>
-          <div className="hidden md:flex items-center space-x-8">
-            <Link className="font-manrope tracking-tight font-semibold text-zinc-400 hover:text-white transition-colors" href="/#features">Features</Link>
-            <Link className="font-manrope tracking-tight font-semibold text-zinc-400 hover:text-white transition-colors" href="/about">About</Link>
-            <Link className="font-manrope tracking-tight font-semibold text-violet-400 border-b-2 border-violet-500 pb-1" href="/blog">Blog</Link>
-            <Link className="font-manrope tracking-tight font-semibold text-zinc-400 hover:text-white transition-colors" href="/#pricing">Pricing</Link>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Link href="/login" className="px-5 py-2 text-sm font-semibold text-zinc-300 hover:text-white transition-colors">Login</Link>
-            <Link href="/signup" className="px-6 py-2.5 bg-gradient-to-r from-primary-dim to-secondary-dim text-on-primary font-bold rounded-xl active:scale-95 transition-all duration-300 shadow-lg shadow-primary/20">Get Started</Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
+
 
       {/* Hero Header */}
       <header className="relative pt-44 pb-32 overflow-hidden">

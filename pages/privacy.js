@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import Link from 'next/link';
+import Navbar from '../components/Navbar';
 
 const LAST_UPDATED = 'March 17, 2026';
 
@@ -72,27 +73,8 @@ export default function Privacy() {
       </Head>
 
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 glass-effect border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M13 10V3L4 14h7v7l9-11h-7z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-              </svg>
-            </div>
-            <span className="text-lg font-bold text-white">Scrayva</span>
-          </Link>
-          <div className="flex items-center gap-6 text-sm">
-            <Link href="/" className="text-slate-400 hover:text-white transition-colors">Home</Link>
-            <Link href="/blog" className="text-slate-400 hover:text-white transition-colors">Blog</Link>
-            <Link href="/about" className="text-slate-400 hover:text-white transition-colors">About</Link>
-            <Link href="/terms" className="text-slate-400 hover:text-white transition-colors">Terms</Link>
-            <Link href="/dashboard" className="bg-brand-primary hover:bg-brand-secondary text-white px-4 py-2 rounded-full transition-all text-sm font-semibold">
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
+
 
       <main className="pt-28 pb-24 max-w-3xl mx-auto px-6">
         {/* Header */}

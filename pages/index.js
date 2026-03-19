@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import Link from 'next/link';
+import Navbar from '../components/Navbar';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { handleRazorpayCheckout } from '../lib/razorpay';
@@ -23,27 +24,7 @@ export default function Landing() {
   }, []);
 
   const handlePlanClick = (planName) => {
-    if (!user) {
-      router.push('/signup');
-      return;
-    }
-    
-    if (planName === 'Free') {
-      router.push('/dashboard');
-      return;
-    }
-
-    const cycle = isYearly ? 'yearly' : 'monthly';
-    handleRazorpayCheckout(
-      planName,
-      cycle,
-      (data) => {
-        router.push('/dashboard');
-      },
-      (err) => {
-        alert(err || 'Payment failed');
-      }
-    );
+    router.push('/pricing');
   };
 
   return (
@@ -55,34 +36,9 @@ export default function Landing() {
       </Head>
 
       {/* ── Navigation ── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 glass-effect border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path d="M13 10V3L4 14h7v7l9-11h-7z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                </svg>
-              </div>
-              <span className="text-xl font-bold tracking-tight text-white">Scrayva</span>
-            </div>
-            <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
-              <a className="hover:text-brand-primary transition-colors" href="#features">Features</a>
-              <a className="hover:text-brand-primary transition-colors" href="#workflow">Workflow</a>
-              <a className="hover:text-brand-primary transition-colors" href="#pricing">Pricing</a>
-              <Link href="/blog" className="hover:text-brand-primary transition-colors">Blog</Link>
-              {!user ? (
-                <Link href="/login" className="text-slate-400 hover:text-white transition-colors">Login</Link>
-              ) : (
-                <span className="text-slate-400 text-xs py-1 px-3 border border-slate-700/50 rounded-full">{user.email}</span>
-              )}
-              <Link href={user ? "/dashboard" : "/signup"} className="bg-brand-primary hover:bg-brand-secondary text-white px-5 py-2.5 rounded-full transition-all shadow-lg shadow-brand-primary/20">
-                {user ? 'Go to Dashboard' : 'Start Automating'}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      {/* ── Navigation ── */}
+      <Navbar />
+
 
       {/* ── Hero ── */}
       <section className="relative pt-40 pb-20 overflow-hidden">

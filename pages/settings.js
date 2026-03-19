@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { handleRazorpayCheckout } from '../lib/razorpay';
+
 import Toast, { useToast } from '../components/Toast';
 
 const TABS = [
@@ -51,19 +51,7 @@ export default function Settings() {
   };
 
   const triggerUpgrade = (tier) => {
-    const cycle = isYearly ? 'yearly' : 'monthly';
-    handleRazorpayCheckout(
-      tier,
-      cycle,
-      (data) => {
-        showToast(`Successfully upgraded to ${data.tier} (${cycle})!`, 'success');
-        // Refresh session
-        supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
-      },
-      (err) => {
-        showToast(err, 'error');
-      }
-    );
+    router.push('/pricing');
   };
 
   const handleLogout = async () => {
