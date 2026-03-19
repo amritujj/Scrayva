@@ -31,7 +31,7 @@ export default function Templates() {
   };
 
   const handleRequest = () => {
-    window.location.href = 'mailto:support@scrayva.space?subject=Template%20Request&body=Hi%20Scrayva%20team%2C%20I%20would%20like%20to%20request%20a%20template%20for...';
+    window.open('https://mail.google.com/mail/?view=cm&fs=1&to=support@scrayva.space&su=Template%20Request&body=Hi%20Scrayva%20team%2C%20I%20would%20like%20to%20request%20a%20template%20for...', '_blank');
   };
 
   return (

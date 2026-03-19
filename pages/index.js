@@ -381,7 +381,7 @@ export default function Landing() {
                 What if your web agent could also talk? Scrayva Voice will soon handle inbound calls, answer FAQs based on your website data, and book meetings directly into your calendar.
               </p>
               <div data-reveal="left" data-delay="450" className="flex flex-wrap items-center gap-4">
-                <a href="mailto:support@scrayva.space?subject=Scrayva%20Voice%20Waitlist&body=Hi%2C%20I%20want%20to%20join%20the%20Scrayva%20Voice%20waitlist!" className="px-8 py-3 bg-white text-slate-900 rounded-full font-bold hover:bg-slate-200 transition-colors">
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=support@scrayva.space&su=Scrayva%20Voice%20Waitlist&body=Hi%2C%20I%20want%20to%20join%20the%20Scrayva%20Voice%20waitlist!" target="_blank" rel="noopener noreferrer" className="px-8 py-3 bg-white text-slate-900 rounded-full font-bold hover:bg-slate-200 transition-colors">
                   Join the Waitlist
                 </a>
               </div>
@@ -420,7 +420,7 @@ export default function Landing() {
               <h4 className="text-white font-semibold mb-6">Company</h4>
               <ul className="text-slate-500 space-y-4 text-sm">
                 <li><Link className="hover:text-brand-primary transition-colors" href="/about">About Us</Link></li>
-                <li><a className="hover:text-brand-primary transition-colors" href="mailto:support@scrayva.space?subject=Contact%20Scrayva">Contact</a></li>
+                <li><a className="hover:text-brand-primary transition-colors" href="https://mail.google.com/mail/?view=cm&fs=1&to=support@scrayva.space&su=Contact%20Scrayva" target="_blank" rel="noopener noreferrer">Contact</a></li>
                 <li><Link className="hover:text-brand-primary transition-colors" href="/privacy">Privacy</Link></li>
                 <li><Link className="hover:text-brand-primary transition-colors" href="/terms">Terms</Link></li>
               </ul>

@@ -292,7 +292,7 @@ export default function Blog() {
             </p>
             <div className="flex gap-4 mt-8">
               <a className="text-zinc-500 hover:text-primary transition-colors" href="#"><span className="material-symbols-outlined">share</span></a>
-              <a className="text-zinc-500 hover:text-primary transition-colors" href="mailto:support@scrayva.space?subject=Contact%20Support"><span className="material-symbols-outlined">mail</span></a>
+              <a className="text-zinc-500 hover:text-primary transition-colors" href="https://mail.google.com/mail/?view=cm&fs=1&to=support@scrayva.space&su=Contact%20Support" target="_blank" rel="noopener noreferrer"><span className="material-symbols-outlined">mail</span></a>
               <a className="text-zinc-500 hover:text-primary transition-colors" href="#"><span className="material-symbols-outlined">terminal</span></a>
             </div>
           </div>
@@ -301,7 +301,7 @@ export default function Blog() {
               <h4 className="text-white font-bold text-sm mb-6">Legal</h4>
               <Link className="block text-zinc-500 hover:text-violet-400 transition-colors font-manrope text-sm hover:translate-x-1" href="/privacy">Privacy Policy</Link>
               <Link className="block text-zinc-500 hover:text-violet-400 transition-colors font-manrope text-sm hover:translate-x-1" href="/terms">Terms of Service</Link>
-              <a className="block text-zinc-500 hover:text-violet-400 transition-colors font-manrope text-sm hover:translate-x-1" href="mailto:support@scrayva.space?subject=Security%20Report">Security</a>
+              <a className="block text-zinc-500 hover:text-violet-400 transition-colors font-manrope text-sm hover:translate-x-1" href="https://mail.google.com/mail/?view=cm&fs=1&to=support@scrayva.space&su=Security%20Report" target="_blank" rel="noopener noreferrer">Security</a>
             </div>
             <div className="space-y-4">
               <h4 className="text-white font-bold text-sm mb-6">Platform</h4>

@@ -322,7 +322,7 @@ export default function FreelancerGuide() {
               The next generation of web automation. Scrayva empowers teams and students to scale their research operations through intelligent AI agents.
             </p>
             <div className="flex gap-4">
-              <a className="text-slate-500 hover:text-brand-primary transition-colors" href="mailto:support@scrayva.space?subject=Contact%20Support"><span className="material-symbols-outlined">mail</span></a>
+              <a className="text-slate-500 hover:text-brand-primary transition-colors" href="https://mail.google.com/mail/?view=cm&fs=1&to=support@scrayva.space&su=Contact%20Support" target="_blank" rel="noopener noreferrer"><span className="material-symbols-outlined">mail</span></a>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-8">
