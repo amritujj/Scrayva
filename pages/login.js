@@ -36,7 +36,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0b0f1a] flex flex-col items-center justify-center p-4">
       <Head>
         <title>Log In - Scrayva</title>
       </Head>
@@ -44,7 +44,7 @@ export default function Login() {
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
           <Link href="/" className="inline-flex items-center gap-2 mb-6 hover:opacity-80 transition-opacity">
-            <div className="w-10 h-10 rounded-xl bg-[#3b82f6] flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+            <div className="w-10 h-10 rounded-xl bg-brand-primary flex items-center justify-center shadow-[0_0_15px_rgba(139,92,246,0.5)]">
               <span className="font-bold text-white text-2xl leading-none">S</span>
             </div>
             <span className="text-2xl font-bold tracking-tight text-white">Scrayva</span>
@@ -76,7 +76,7 @@ export default function Login() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2.5 border border-slate-700 rounded-xl bg-slate-950/50 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent transition-all"
+                  className="block w-full pl-10 pr-3 py-2.5 border border-slate-700 rounded-xl bg-slate-950/50 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all"
                   placeholder="you@example.com"
                 />
               </div>
@@ -98,7 +98,7 @@ export default function Login() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2.5 border border-slate-700 rounded-xl bg-slate-950/50 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent transition-all"
+                  className="block w-full pl-10 pr-3 py-2.5 border border-slate-700 rounded-xl bg-slate-950/50 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all"
                   placeholder="••••••••"
                 />
               </div>
@@ -107,7 +107,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-transparent rounded-xl text-sm font-medium text-white bg-[#3b82f6] hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0a0f1e] focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] mt-6"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-transparent rounded-xl text-sm font-medium text-white bg-brand-primary hover:bg-brand-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0f1a] focus:ring-brand-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_0_15px_rgba(139,92,246,0.3)] hover:shadow-[0_0_20px_rgba(139,92,246,0.5)] mt-6"
             >
               {loading ? (
                 <>
@@ -126,13 +126,13 @@ export default function Login() {
 
         <p className="mt-8 text-center text-sm text-slate-400">
           Don't have an account?{' '}
-          <Link href="/signup" className="font-medium text-[#3b82f6] hover:text-blue-400 transition-colors">
+          <Link href="/signup" className="font-medium text-brand-accent hover:text-brand-primary transition-colors">
             Sign up now
           </Link>
         </p>
       </div>
 
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_bottom_right,_var(--tw-gradient-stops))] from-blue-900/10 via-[#0a0f1e] to-[#0a0f1e]"></div>
+      <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_bottom_right,_var(--tw-gradient-stops))] from-brand-primary/10 via-[#0b0f1a] to-[#0b0f1a]"></div>
     </div>
   );
 }

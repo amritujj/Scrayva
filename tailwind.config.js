@@ -7,8 +7,8 @@ module.exports = {
     extend: {
       colors: {
         // Layout / dark theme
-        'dark-bg':     '#0f0f23',
-        'dark-card':   '#1a1a2e',
+        'dark-bg':     '#0b0f1a',
+        'dark-card':   '#161b26',
         'dark-border': '#262626',
         'dark-text':   '#e2e8f0',
         'dark-muted':  '#94a3b8',
@@ -101,11 +101,11 @@ module.exports = {
         "on-primary-fixed": "#000000"
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        "headline": ["Manrope"],
-        "body": ["Inter"],
-        "label": ["Inter"],
-        "manrope": ["Manrope"]
+        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        "headline": ["var(--font-manrope)", "sans-serif"],
+        "body": ["var(--font-inter)", "sans-serif"],
+        "label": ["var(--font-inter)", "sans-serif"],
+        "manrope": ["var(--font-manrope)", "sans-serif"]
       },
     }
   },
