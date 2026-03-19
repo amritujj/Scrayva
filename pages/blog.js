@@ -157,7 +157,7 @@ export default function Blog() {
             </div>
           </Link>
           {/* Post 2 */}
-          <Link href="/blog" className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
+          <Link href="/blog/freelancer-guide-automate-client-research" className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
             <div className="aspect-[16/10] overflow-hidden">
               <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Freelancer working on laptop in a modern cafe" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD38E0CwLjE2vWcsAzyIDqFIhjXJIRExFiTzW5DubVezQIGWpEzAopS6GkCsSayCQL9aPU_Kx593YB-UKw09PNcTSZ2WrTGil4znaRkThIxvZLPhigz4IgyMFEutdqqycwnBaAXz_5Wez3j8lu0ejo3S5Uo6pcTOJq7s0goDu8eW4QKt7U8PpwZordHT1j_M9orjN39FM3l1XtvKzmwznv4omV0VF9Lvfh5XLIxY8ANIwMzGr5TGPjIi_kFWnwTOOrPx7M_AGbh18U" alt="Freelancer image" />
             </div>
