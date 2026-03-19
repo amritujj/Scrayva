@@ -9,7 +9,7 @@ export default function Signup() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [tier, setTier] = useState('Free');
+  const [tier] = useState('None');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -23,9 +23,10 @@ export default function Signup() {
         email,
         password,
         options: {
+          emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/login` : undefined,
           data: {
             tier,
-            credits: tier === 'Free' ? 5 : 50,
+            credits: 0,
           }
         }
       });
@@ -110,20 +111,6 @@ export default function Signup() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5" htmlFor="tier">
-                Select Plan
-              </label>
-              <select
-                id="tier"
-                value={tier}
-                onChange={(e) => setTier(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2.5 border border-slate-700 rounded-xl bg-slate-950/50 text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all"
-              >
-                <option value="Free">Free (5 Credits/mo)</option>
-                <option value="Pro">Pro (50 Credits/mo)</option>
-              </select>
-            </div>
 
             <button
               type="submit"

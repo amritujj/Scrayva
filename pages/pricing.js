@@ -28,7 +28,33 @@ export default function Pricing() {
     }
     
     if (planName === 'Free') {
-      router.push('/dashboard');
+      // For Free plan, we update the user metadata via our custom API
+      const activateFreePlan = async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) return;
+
+          const res = await fetch('/api/update-tier', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({ tier: 'Free' })
+          });
+
+          if (res.ok) {
+            router.push('/dashboard?plan_activated=true');
+          } else {
+            const err = await res.json();
+            alert(err.error || 'Failed to activate Free plan');
+          }
+        } catch (err) {
+          alert('Network error while activating plan');
+          console.error(err);
+        }
+      };
+      activateFreePlan();
       return;
     }
 

@@ -35,7 +35,7 @@ export default async function handler(req, res) {
       // 1. Create task in Supabase first
       const { data: task, error: insertError } = await supabase
         .from('tasks')
-        .insert([{ prompt, status: 'queued' }])
+        .insert([{ prompt, status: 'queued', user_id: user.id }])
         .select()
         .single();
         
@@ -60,9 +60,17 @@ export default async function handler(req, res) {
       return res.status(201).json(task);
     } else {
       // GET: Fetch from Supabase directly
+      const authHeader = req.headers.authorization;
+      if (!authHeader) return res.status(401).json({ error: 'Unauthorized: Missing token' });
+      const token = authHeader.split(' ')[1];
+      
+      const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+      if (userError || !user) return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+
       const { data: tasks, error: fetchError } = await supabase
         .from('tasks')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
         
       if (fetchError) throw fetchError;

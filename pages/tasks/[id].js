@@ -2,6 +2,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { supabase } from '../../lib/supabase';
 import Toast, { useToast } from '../../components/Toast';
 
 const STEPS = ['Queued', 'Navigating', 'Extracting', 'Finished'];
@@ -20,10 +21,15 @@ export default function TaskDetail() {
   const fetchTask = async () => {
     if (!id) return;
     try {
-      const res = await fetch(`/api/tasks/${id}`);
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers = session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {};
+      
+      const res = await fetch(`/api/tasks/${id}`, { headers });
       if (res.ok) {
         const data = await res.json();
         setTask(data);
+      } else if (res.status === 401 || res.status === 403 || res.status === 404) {
+        setTask(null);
       }
     } catch (err) {
       console.error("Failed to fetch task:", err);

@@ -2,6 +2,10 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useState } from 'react';
 import Toast, { useToast } from '../components/Toast';
+import { supabase } from '../lib/supabase';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
+import useScrollReveal from '../hooks/useScrollReveal';
 
 const INIT_WORKFLOWS = [
   { id: 'price-monitor',  title: 'E-commerce Price Monitor',    desc: 'Extracts competitor pricing daily from top 5 retail sites.', status: 'active',  lastRun: '2 hours ago', schedule: 'Daily',   destination: 'Google Sheets' },
@@ -11,7 +15,22 @@ const INIT_WORKFLOWS = [
 
 export default function Workflows() {
   const [workflows, setWorkflows] = useState([]);
+  const [user, setUser] = useState(null);
+  const [tier, setTier] = useState('Free');
   const { toast, showToast } = useToast();
+  const router = useRouter();
+  useScrollReveal();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setUser(user);
+        setTier(user.user_metadata?.tier || 'Free');
+      } else {
+        router.push('/login');
+      }
+    });
+  }, []);
 
   const toggleStatus = (id) => {
     setWorkflows((prev) =>
@@ -59,7 +78,7 @@ export default function Workflows() {
             <Link key={item.href} href={item.href}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${item.active ? 'bg-indigo-600/10 text-indigo-400 font-medium' : 'text-slate-400 hover:bg-slate-800'}`}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                <path d={item.active ? "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" : "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"} strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
               </svg>
               {item.label}
             </Link>
@@ -67,10 +86,12 @@ export default function Workflows() {
         </nav>
         <div className="p-4 border-t border-slate-800">
           <div className="flex items-center gap-3 p-2 bg-slate-950/50 rounded-xl">
-            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold">U</div>
+            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold">
+              {user?.email?.[0]?.toUpperCase() || 'U'}
+            </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">My Account</p>
-              <p className="text-xs text-slate-500 truncate">Free Plan</p>
+              <p className="text-sm font-medium text-white truncate">{user?.email || 'My Account'}</p>
+              <p className="text-xs text-slate-500 truncate">{tier} Plan</p>
             </div>
           </div>
         </div>

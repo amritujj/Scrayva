@@ -57,6 +57,8 @@ export default function Dashboard() {
         
         setCredits(user.user_metadata?.credits ?? initialCredits);
       } else {
+        setUser(null);
+        setTasks([]);
         router.push('/login');
       }
     });
@@ -74,6 +76,12 @@ export default function Dashboard() {
 
   const submitTask = async (taskPrompt) => {
     if (!taskPrompt.trim()) { showToast('Please enter a task prompt first.', 'error'); return; }
+    if (tier === 'None') {
+      showToast('Redirecting to choose a plan...', 'info');
+      router.push('/pricing');
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
@@ -191,7 +199,8 @@ export default function Dashboard() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{user?.email || 'My Account'}</p>
-              <p className="text-xs text-dark-muted">{tier} Plan</p>
+              {tier !== 'None' && <p className="text-xs text-dark-muted">{tier} Plan</p>}
+              {tier === 'None' && <p className="text-xs text-brand-accent font-semibold animate-pulse">Select a Plan</p>}
             </div>
           </Link>
         </div>
