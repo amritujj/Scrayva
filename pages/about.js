@@ -88,14 +88,14 @@ export default function About() {
         <section className="max-w-3xl mx-auto px-6 mb-24">
           <h2 className="text-3xl font-bold text-white text-center mb-10">The team</h2>
           <div className="flex flex-col sm:flex-row items-center gap-8 p-10 bg-slate-800/30 border border-white/5 rounded-3xl">
-            <div className="w-24 h-24 flex-shrink-0 rounded-2xl bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center text-white font-bold text-3xl">
-              S
+            <div className="w-24 h-24 flex-shrink-0 rounded-2xl bg-gradient-to-br from-brand-primary to-brand-secondary overflow-hidden flex items-center justify-center text-white shadow-xl shadow-brand-primary/20">
+               <img src="/images/amrit_founder.png" alt="Amrit - Founder of Scrayva" className="w-full h-full object-cover" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white mb-1">Scrayva</h3>
-              <p className="text-brand-accent text-sm font-semibold mb-3">Founder &amp; Builder</p>
+              <h3 className="text-xl font-bold text-white mb-1">Amrit</h3>
+              <p className="text-brand-accent text-sm font-semibold mb-3">Solo Founder &amp; Student Entrepreneur</p>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Solo-built from the ground up. Every line of code, every feature decision, every support reply—one person obsessed with making automation genuinely useful for the people who need it most.
+                Founded Scrayva out of a passion for automation to solve a personal frustration: why is enterprise-grade web automation so hard for indie hackers and small teams to use? Every line of code, every feature decision, and every support reply comes from an obsession to make AI-driven web research genuinely useful for the people who need it most.
               </p>
             </div>
           </div>

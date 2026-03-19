@@ -127,38 +127,42 @@ export default function Blog() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Post 1 */}
-          <Link href="/blog/10-web-research-tasks" className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
+          <Link href="/blog/ai-agents-vs-web-scraping" className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
             <div className="aspect-[16/10] overflow-hidden">
-              <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Student studying with computer and automation icons" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCN1XqXBrO57monrTjS5WgbgrYk9F4ppnl34pZK2i9HIzNKYHjtX00UZkRR7V4SdpAEaqM6U_F--2ucnNaHCBQiWaWxcZFxl02eSWAAxvmhYitq3hoEgs8y5-yyrl2_y6LblxvvwBxcM1K4rqa14nlhsYc2nrJS9kOUAznIZCKplF8KzVYbQUwA-3xI0nG1sqTF2RW_pbBmdd2fx7esRsAr_GaRD9b-bPVWp6kkA8Gr6UQLkbHjtTW01PSbavdouoHFcBMdbyr9YvA" alt="Student matching graphic" />
+              <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Student studying with computer and automation icons" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCN1XqXBrO57monrTjS5WgbgrYk9F4ppnl34pZK2i9HIzNKYHjtX00UZkRR7V4SdpAEaqM6U_F--2ucnNaHCBQiWaWxcZFxl02eSWAAxvmhYitq3hoEgs8y5-yyrl2_y6LblxvvwBxcM1K4rqa14nlhsYc2nrJS9kOUAznIZCKplF8KzVYbQUwA-3xI0nG1sqTF2RW_pbBmdd2fx7esRsAr_GaRD9b-bPVWp6kkA8Gr6UQLkbHjtTW01PSbavdouoHFcBMdbyr9YvA" alt="AI Agent graphic" />
             </div>
             <div className="p-6 flex flex-col flex-grow">
               <div className="flex items-center gap-2 mb-4">
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-secondary/10 text-secondary">Automation</span>
-                <span className="text-[10px] text-on-surface-variant uppercase font-medium">5 min read</span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-secondary/10 text-secondary">Technology</span>
+                <span className="text-[10px] text-on-surface-variant uppercase font-medium">7 min read</span>
               </div>
-              <h4 className="text-xl font-headline font-bold text-on-surface mb-4 group-hover:text-primary transition-colors">10 Web Research Tasks Students Can Automate Today</h4>
-              <p className="text-sm text-on-surface-variant mb-6 line-clamp-3">From compiling literature reviews to tracking grant deadlines, see how AI saves students hours.</p>
+              <h4 className="text-xl font-headline font-bold text-on-surface mb-4 group-hover:text-primary transition-colors">Why AI Agents are Replacing CSS Web Scrapers in 2026</h4>
+              <p className="text-sm text-on-surface-variant mb-6 line-clamp-3">Discover why brittle XPath selectors are dead, and how autonomous intent-driven AI agents are the future.</p>
               <div className="mt-auto flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary-dim/20"></div>
-                <span className="text-xs font-semibold text-on-surface">Elena Vance</span>
+                <div className="w-8 h-8 rounded-full bg-slate-800 overflow-hidden text-xs flex items-center justify-center font-bold text-white">
+                  <img src="/images/amrit_founder.png" alt="Amrit" className="w-full h-full object-cover" />
+                </div>
+                <span className="text-xs font-semibold text-on-surface">Amrit</span>
               </div>
             </div>
           </Link>
           {/* Post 2 */}
-          <Link href="/blog/freelancer-guide-automate-client-research" className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
+          <Link href="/blog/automate-linkedin-lead-gen" className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
             <div className="aspect-[16/10] overflow-hidden">
               <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Freelancer working on laptop in a modern cafe" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD38E0CwLjE2vWcsAzyIDqFIhjXJIRExFiTzW5DubVezQIGWpEzAopS6GkCsSayCQL9aPU_Kx593YB-UKw09PNcTSZ2WrTGil4znaRkThIxvZLPhigz4IgyMFEutdqqycwnBaAXz_5Wez3j8lu0ejo3S5Uo6pcTOJq7s0goDu8eW4QKt7U8PpwZordHT1j_M9orjN39FM3l1XtvKzmwznv4omV0VF9Lvfh5XLIxY8ANIwMzGr5TGPjIi_kFWnwTOOrPx7M_AGbh18U" alt="Freelancer image" />
             </div>
             <div className="p-6 flex flex-col flex-grow">
               <div className="flex items-center gap-2 mb-4">
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-tertiary/10 text-tertiary">Freelance</span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-tertiary/10 text-tertiary">Growth</span>
                 <span className="text-[10px] text-on-surface-variant uppercase font-medium">12 min read</span>
               </div>
-              <h4 className="text-xl font-headline font-bold text-on-surface mb-4 group-hover:text-primary transition-colors">Freelancer Guide: Automate Business Research with AI</h4>
-              <p className="text-sm text-on-surface-variant mb-6 line-clamp-3">Stop cold pitching blindly. Use Scrayva to build detailed profiles of potential clients automatically.</p>
+              <h4 className="text-xl font-headline font-bold text-on-surface mb-4 group-hover:text-primary transition-colors">Automate B2B Lead Gen with AI (Without Getting Blocked)</h4>
+              <p className="text-sm text-on-surface-variant mb-6 line-clamp-3">Stop burning your IPs. Learn how Scrayva agents mimic human browsing to extract decision-maker data safely.</p>
               <div className="mt-auto flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-secondary-dim/20"></div>
-                <span className="text-xs font-semibold text-on-surface">Jordan Smith</span>
+                <div className="w-8 h-8 rounded-full bg-slate-800 overflow-hidden text-xs flex items-center justify-center font-bold text-white">
+                  <img src="/images/amrit_founder.png" alt="Amrit" className="w-full h-full object-cover" />
+                </div>
+                <span className="text-xs font-semibold text-on-surface">Amrit</span>
               </div>
             </div>
           </Link>

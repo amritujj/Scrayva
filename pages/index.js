@@ -49,18 +49,18 @@ export default function Landing() {
           <div data-reveal data-delay="0"
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-brand-accent text-xs font-semibold uppercase tracking-wider mb-8">
             <span className="flex h-2 w-2 rounded-full bg-brand-primary animate-pulse" />
-            Next-Gen Browser Intelligence
+            AI Agents &gt; CSS Selectors
           </div>
 
           <h1 data-reveal data-delay="150"
             className="text-5xl md:text-7xl font-extrabold text-white mb-6 tracking-tight leading-[1.1]">
-            Turn Browser Tasks into<br />
-            <span className="gradient-text">Business Outcomes</span>
+            Forget Brittle Scrapers.<br />
+            <span className="gradient-text">Hire Autonomous AI.</span>
           </h1>
 
           <p data-reveal data-delay="300"
             className="max-w-2xl mx-auto text-lg md:text-xl text-slate-400 mb-10 leading-relaxed">
-            Autonomous AI agents that navigate the web, conduct market research, monitor competitors, and extract structured data—so you can focus on building, not browsing.
+            Scrayva doesn't just scrape—it understands. Our AI agents execute complex web tasks, bypass captchas, and deliver clean structured data instantly. Better than Apify. Faster than PhantomBuster.
           </p>
 
           <div data-reveal data-delay="450"
@@ -80,14 +80,15 @@ export default function Landing() {
           <div data-reveal="scale" data-delay="200"
             className="mt-20 relative mx-auto max-w-5xl">
             <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-2 shadow-2xl overflow-hidden shadow-brand-primary/10">
-              <div className="w-full h-64 md:h-80 bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-brand-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path d="M13 10V3L4 14h7v7l9-11h-7z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                    </svg>
+              <div className="w-full h-auto bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl overflow-hidden relative group cursor-pointer aspect-video flex items-center justify-center">
+                {/* Mockup Image */}
+                <img src="/images/dashboard_mockup.png" alt="Scrayva Dashboard" className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
+                
+                {/* Overlay Video Play Button Placeholder */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all duration-300">
+                  <div className="w-20 h-20 bg-brand-primary/90 text-white rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(139,92,246,0.8)] transform scale-90 group-hover:scale-105 transition-all duration-300">
+                    <svg className="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                   </div>
-                  <p className="text-slate-400 text-sm">Scrayva Operations Dashboard</p>
                 </div>
               </div>
             </div>
@@ -102,6 +103,53 @@ export default function Landing() {
                 <div className="h-2 w-4/5 bg-white/10 rounded" />
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Social Proof / Logos ── */}
+      <section className="py-12 border-t border-b border-white/5 bg-slate-950">
+        <div className="max-w-7xl mx-auto px-4 overflow-hidden">
+          <p className="text-center text-sm font-semibold text-slate-500 uppercase tracking-widest mb-8">Trusted by innovative teams worldwide</p>
+          <div className="flex gap-12 md:gap-24 justify-center items-center opacity-40 grayscale flex-wrap">
+            <h3 className="text-2xl font-bold font-sans">Acme Corp</h3>
+            <h3 className="text-2xl font-black tracking-tighter">TechFlow</h3>
+            <h3 className="text-2xl font-serif italic">NovaData</h3>
+            <h3 className="text-2xl font-mono">Synthetix</h3>
+            <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-200">GrowthGen</h3>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Testimonials ── */}
+      <section className="py-24 bg-[#0b0f1a] relative" id="testimonials">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 data-reveal className="text-3xl md:text-4xl font-bold text-white mb-4">Don't just take our word for it</h2>
+            <p data-reveal data-delay="150" className="text-slate-400 max-w-2xl mx-auto">See how agencies and founders are replacing their legacy scrapers.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { text: "We migrated from PhantomBuster to Scrayva and cut our lead-gen workflow time by 80%. The AI agents just figure out the site changes automatically.", author: "Alex R.", role: "Growth Agency Founder", delay: "0" },
+              { text: "Apify required us to hire a developer to maintain our scraping scripts. Scrayva lets our marketing team run complex data extraction with just a text prompt.", author: "Sarah T.", role: "VP of Marketing", delay: "150" },
+              { text: "The structured JSON exports are flawless. We use the Ultimate tier to populate our real-estate database across 50 different listing sites daily.", author: "Michael C.", role: "Data Engineer", delay: "300" }
+            ].map((t, idx) => (
+              <div key={idx} data-reveal data-delay={t.delay} className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-brand-primary/30 transition-all flex flex-col justify-between">
+                <div>
+                  <div className="flex text-yellow-500 mb-6 gap-1">
+                    {[1,2,3,4,5].map(star => <svg key={star} className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>)}
+                  </div>
+                  <p className="text-slate-300 leading-relaxed mb-8">&quot;{t.text}&quot;</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center font-bold text-brand-accent border border-white/10">{t.author[0]}</div>
+                  <div>
+                    <h4 className="font-bold text-white text-sm">{t.author}</h4>
+                    <p className="text-xs text-slate-500">{t.role}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -152,16 +200,16 @@ export default function Landing() {
 
             {/* Left — steps */}
             <div className="lg:w-1/2">
+              <div className="text-brand-accent text-sm font-bold tracking-widest uppercase mb-4">Onboarding Guide</div>
               <h2 data-reveal="left"
                 className="text-4xl font-bold text-white mb-8">
-                From Intent to Action in Minutes
+                How to Build Your First Agent
               </h2>
               <div className="space-y-8">
                 {[
-                  { n: 1, title: 'Prompt', delay: '100', desc: 'Tell Scrayva what you need in plain English. "Find SaaS founders in London and export their LinkedIn profiles."' },
-                  { n: 2, title: 'Run',    delay: '200', desc: 'The AI agent deploys a headless browser, manages proxies, handles CAPTCHAs, and navigates the target sites.' },
-                  { n: 3, title: 'Review', delay: '300', desc: 'Verify the captured data or screenshots in our clean dashboard. Tweak instructions if needed.' },
-                  { n: 4, title: 'Act',    delay: '400', desc: 'Push data to HubSpot, Slack, or Google Sheets with one click or through our API.' },
+                  { n: 1, title: 'Describe Your Goal', delay: '100', desc: 'No CSS selectors needed. Just write what you want in plain English. e.g. "Extract all SaaS founders from YCombinator."' },
+                  { n: 2, title: 'Watch it Execute', delay: '200', desc: 'The AI spins up a real browser, handles popups, pagination, and captchas entirely autonomously.' },
+                  { n: 3, title: 'Export & Automate', delay: '300', desc: 'Download pristine structured JSON/CSV, or push it directly to your CRM via our webhook integration.' }
                 ].map((s) => (
                   <div key={s.n} data-reveal="left" data-delay={s.delay} className="flex gap-6">
                     <div className="flex-shrink-0 w-12 h-12 rounded-full bg-brand-primary/20 text-brand-primary flex items-center justify-center font-bold text-xl border border-brand-primary/30">
@@ -387,6 +435,19 @@ export default function Landing() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── Ethical Web Scraping ── */}
+      <section className="py-16 border-t border-white/5 bg-slate-950/80">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500/10 text-green-400 mb-6">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
+          </div>
+          <h2 className="text-3xl font-bold text-white mb-4">Committed to Ethical Web Operations</h2>
+          <p className="text-slate-400 leading-relaxed max-w-2xl mx-auto">
+            Scrayva empowers teams to gather public business data responsibly. We enforce strict rate-limiting to protect target server health and adhere to modern best practices in web automation. Data extraction shouldn't require compromising ethical standards.
+          </p>
         </div>
       </section>
 
