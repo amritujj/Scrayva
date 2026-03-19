@@ -5,7 +5,7 @@ import { useState } from 'react';
 import Toast, { useToast } from '../components/Toast';
 
 const TEMPLATES = [
-  { id: 'find-leads',       title: 'Find Leads',              desc: 'Automate prospecting by extracting high-intent leads from LinkedIn, Twitter, and niche industry directories.', tags: ['Sales', 'Social'],      category: 'Sales'      },
+  { id: 'find-leads',       title: 'Business Intelligence',   desc: 'Automate market research by extracting data from LinkedIn, Twitter, and niche industry directories.', tags: ['Sales', 'Social'],      category: 'Market Research' },
   { id: 'track-competitors',title: 'Track Competitors',       desc: 'Monitor competitor website changes, new feature releases, and blog updates in real-time.',                      tags: ['Intelligence', 'Alerts'], category: 'Monitoring' },
   { id: 'product-research', title: 'Product Research',        desc: 'Gather reviews, ratings, and feature sets from marketplaces like G2, Capterra, or Amazon.',                    tags: ['Market', 'Reviews'],     category: 'Analysis'   },
   { id: 'extract-pricing',  title: 'Extract Pricing Tables',  desc: 'Automatically turn complex pricing pages into structured CSV or JSON data with one click.',                      tags: ['Data', 'Structure'],     category: 'Analysis'   },
@@ -71,7 +71,7 @@ export default function Templates() {
               Automation <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">Templates</span>
             </h1>
             <p className="text-scrayva-muted text-lg max-w-2xl">
-              Quickly launch web scraping and automation workflows with pre-built templates designed for growth teams.
+              Quickly launch web monitoring and research workflows with pre-built templates designed for growth teams.
             </p>
           </div>
 

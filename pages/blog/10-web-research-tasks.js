@@ -140,7 +140,7 @@ export default function BlogPost() {
 
           <h3>4. Extracting Data from Web Tables into Spreadsheets</h3>
           <p><strong>The Problem:</strong> For a geography or economics project, you need to copy data (like the population of Indian states) from a Wikipedia table into Excel. Copy-pasting ruins the formatting and takes forever.</p>
-          <p><strong>The Solution:</strong> Automate web scraping directly into Google Sheets without writing a single line of code.</p>
+          <p><strong>The Solution:</strong> Automate data extraction directly into Google Sheets without writing a single line of code.</p>
           <p><strong>Tools to Use:</strong> Google Sheets (IMPORTHTML formula) or Chrome extensions like Data Miner.</p>
           <h4>Actionable Steps:</h4>
           <ul>

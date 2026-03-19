@@ -7,7 +7,7 @@ import Toast, { useToast } from '../components/Toast';
 import useScrollReveal from '../hooks/useScrollReveal';
 
 const QUICK_TEMPLATES = [
-  { label: '🔍 Find Leads',         prompt: 'Search LinkedIn for B2B SaaS founders in India with 10–50 employees. Extract name, role, company, and LinkedIn URL.' },
+  { label: '🔍 Market Trends',      prompt: 'Search LinkedIn for B2B SaaS founders in India with 10–50 employees. Aggregate company names, roles, and open tech stack indicators.' },
   { label: '📊 Competitor Prices',  prompt: 'Go to the pricing pages of Apify, Browserless, and ScrapingBee. Extract each plan name, price, and feature list.' },
   { label: '📰 News Digest',        prompt: 'Scrape the top 5 articles from TechCrunch and Hacker News published today. Return title, URL, and a 2-sentence summary.' },
 ];

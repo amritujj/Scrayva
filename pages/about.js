@@ -58,7 +58,7 @@ export default function About() {
             <h2 className="text-2xl font-bold text-white mb-6">Our story</h2>
             <div className="space-y-4 text-slate-400 leading-relaxed">
               <p>
-                Scrayva was founded in 2026 by a solo builder who got tired of spending hours on repetitive browser work—scraping competitor prices, hunting for leads on LinkedIn, manually checking if a product was back in stock. All tasks that were just waiting to be automated.
+                Scrayva was founded in 2026 by a solo builder who got tired of spending hours on repetitive browser work—researching competitor prices, researching market trends on LinkedIn, manually checking if a product was back in stock. All tasks that were just waiting to be automated.
               </p>
               <p>
                 The problem wasn't that automation tools didn't exist. It's that they were built for enterprise teams with developers on speed dial. Setting up a scraper meant wrestling with headless Chrome configs, proxy rotation, CAPTCHA solving libraries, and a week of debugging. For a student or a two-person startup, that's a week you simply don't have.

@@ -6,7 +6,7 @@ export default function FreelancerGuide() {
   return (
     <div className="dark min-h-screen selection:bg-brand-primary/30 text-slate-200 bg-[#0b0f1a] font-sans">
       <Head>
-        <title>Freelancer Guide: Automate Client Research with AI | Scrayva</title>
+        <title>Freelancer Guide: Automate Business Research with AI | Scrayva</title>
         <meta name="description" content="Finding new clients takes too much time for freelancers. AI tools can do this work for you quickly and smartly, so you focus on your skills." />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
@@ -52,7 +52,7 @@ export default function FreelancerGuide() {
           </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-7xl font-headline font-extrabold text-white leading-[1.1] mb-6">
-            Freelancer Guide: Automate <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-brand-secondary">Client Research</span> with AI
+            Freelancer Guide: Automate <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-brand-secondary">Business Research</span> with AI
           </h1>
           
           <p className="text-xl md:text-2xl text-slate-400 font-medium leading-relaxed mb-10">
@@ -74,19 +74,19 @@ export default function FreelancerGuide() {
         <article className="max-w-3xl mx-auto px-6 article-content">
           
           <p>
-            This guide gives simple steps, tools, and Indian stories to automate client research. Start saving hours today and grow your freelance income.
+            This guide gives simple steps, tools, and Indian stories to automate business research. Start saving hours today and grow your freelance income.
           </p>
 
-          <h2>Why Client Research Matters</h2>
+          <h2>Why Business Research Matters</h2>
           <p>
             Freelancers in India face big competition. Platforms like Upwork and Fiverr have millions of users. Manual research means checking LinkedIn, websites, and emails every day.
           </p>
           <p>
-            AI changes everything. It finds leads, checks if they match your services, and even drafts messages. Freelancers save up to 80% time, working more on paid projects. In India, 15 million freelancers earn from global clients. AI helps students and side hustlers like you beat the rush.
+            AI changes everything. It finds market data, checks if companies match your services, and even drafts messages. Freelancers save up to 80% time, working more on paid projects. In India, 15 million freelancers earn from global clients. AI helps students and side hustlers like you beat the rush.
           </p>
 
           <figure className="my-12">
-            <img src="/images/blog/blog2_bar_chart.png" alt="Time saved with AI client research for freelancers" className="w-full rounded-2xl shadow-2xl shadow-brand-primary/10 border border-white/10" />
+            <img src="/images/blog/blog2_bar_chart.png" alt="Time saved with AI business research for freelancers" className="w-full rounded-2xl shadow-2xl shadow-brand-primary/10 border border-white/10" />
             <figcaption className="text-center text-slate-500 text-sm mt-4">Bar chart showing manual research (10 hours/week) vs AI (2 hours/week).</figcaption>
           </figure>
 
@@ -98,7 +98,7 @@ export default function FreelancerGuide() {
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
                 <span className="material-symbols-outlined text-brand-primary mb-3 text-3xl">schedule</span>
                 <h4 className="mt-0 text-white">Save time</h4>
-                <p className="text-sm m-0">Find 50 highly targeted leads in mere minutes.</p>
+                <p className="text-sm m-0">Analyze 50 highly targeted companies in mere minutes.</p>
             </div>
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
                 <span className="material-symbols-outlined text-brand-primary mb-3 text-3xl">target</span>
@@ -125,7 +125,7 @@ export default function FreelancerGuide() {
           <p>No need for expensive software. These work perfectly for beginners entirely within budget.</p>
           <ul>
             <li><strong>ChatGPT:</strong> Free AI chat. Use prompts like "Find web design clients in Mumbai."</li>
-            <li><strong>Perplexity AI:</strong> Smart, internet-connected search for live leads and company info.</li>
+            <li><strong>Perplexity AI:</strong> Smart, internet-connected search for live business data and company info.</li>
             <li><strong>Apollo.io:</strong> Finds verified B2B emails (free for 50/month).</li>
             <li><strong>Zapier:</strong> Links tools, no code required (generous free tier).</li>
             <li><strong>Hunter.io:</strong> Email finder extension.</li>
@@ -140,7 +140,7 @@ export default function FreelancerGuide() {
           <p>Follow these 8 simple steps. You can set the entire process up in one weekend.</p>
 
           <figure className="my-12">
-            <img src="/images/blog/blog2_flowchart.png" alt="AI automate client research flowchart for freelancers" className="w-full rounded-2xl shadow-2xl shadow-brand-primary/10 border border-white/10" />
+            <img src="/images/blog/blog2_flowchart.png" alt="AI automate business research flowchart for freelancers" className="w-full rounded-2xl shadow-2xl shadow-brand-primary/10 border border-white/10" />
             <figcaption className="text-center text-slate-500 text-sm mt-4">Flowchart visually mapping the 8-step automation path.</figcaption>
           </figure>
 
@@ -154,14 +154,14 @@ export default function FreelancerGuide() {
           </ul>
           <p><em>Prompt ChatGPT: "List 10 ideal clients for freelance graphic designer in India."</em></p>
 
-          <h3>Step 2: Generate Leads Fast</h3>
-          <p>Use Perplexity: "Tech startups in Bangalore hiring freelancers in 2026." Copy 20 leads directly to Google Sheets with their Name, Company, and Website.</p>
+          <h3>Step 2: Gather Market Data Fast</h3>
+          <p>Use Perplexity: "Tech startups in Bangalore hiring freelancers in 2026." Copy 20 entries directly to Google Sheets with their Name, Company, and Website.</p>
 
           <h3>Step 3: Find Contact Info</h3>
           <p>Paste those websites into Apollo or Hunter. Get emails and LinkedIn profiles in seconds.</p>
           <p><em>Zapier auto step: New Sheet row → Find email → Automagically Add to column.</em></p>
 
-          <h3>Step 4: Score Leads Smartly</h3>
+          <h3>Step 4: Score Prospects Smartly</h3>
           <p>Not all leads are going to win. AI rates them to save you rejection and time.</p>
           <p>In Sheets, prompt ChatGPT: "Score 1-10: Company X needs logos, budget ₹20k." Focus purely on 8+ scores.</p>
           
@@ -195,7 +195,7 @@ export default function FreelancerGuide() {
           <p>Use Notion or Google Sheets. Track the <em>Date sent</em>, <em>Replies</em>, and <em>Meetings booked</em>. Review this pipeline weekly.</p>
 
           <h3>Step 8: Test and Improve</h3>
-          <p>Track: 100 leads → 20 replies → 5 clients. Tweak your ChatGPT prompts for better results.</p>
+          <p>Track: 100 targets → 20 replies → 5 clients. Tweak your ChatGPT prompts for better results.</p>
           <p>Ramesh did this exactly. He went from 0 to 4 high-paying clients in just 2 months.</p>
 
           <h2>Real Indian Success Stories</h2>
@@ -217,7 +217,7 @@ export default function FreelancerGuide() {
 
           <ul>
             <li><strong>Ramesh from Kerala:</strong> Village teacher, poor English at the start. AI translated pitches, found US logo clients. Challenge: Slow internet. Fix: Mobile data. Now earning ₹60k/month as a side income.</li>
-            <li><strong>Priya from Delhi:</strong> Class 10 student (your age maybe). Automated coding leads on LinkedIn. Got 3 mentors as clients, earned ₹20,000 for books and fees. Her tip: "One step daily."</li>
+            <li><strong>Priya from Delhi:</strong> Class 10 student (your age maybe). Automated coding research on LinkedIn. Got 3 mentors as clients, earned ₹20,000 for books and fees. Her tip: "One step daily."</li>
             <li><strong>Amit from Mumbai:</strong> Ex-IT guy. Used Apollo + Zapier for marketing gigs. Scaled effortlessly to ₹2 lakh/month, hired helpers to automate more.</li>
           </ul>
 
@@ -243,7 +243,7 @@ export default function FreelancerGuide() {
                         <td className="px-6 py-4 text-slate-400">Advanced ChatGPT prompts</td>
                     </tr>
                     <tr className="hover:bg-slate-800/50 transition-colors">
-                        <td className="px-6 py-4 text-white">Too many messy leads</td>
+                        <td className="px-6 py-4 text-white">Too much messy data</td>
                         <td className="px-6 py-4 text-brand-accent">Strictly limit to 20/day</td>
                         <td className="px-6 py-4 text-slate-400">Google Sheets filters</td>
                     </tr>
@@ -293,13 +293,13 @@ export default function FreelancerGuide() {
 
           <h2>🏁 Conclusion</h2>
           <p>
-            AI automates client research so you can work smart. Save your valuable time, win vastly more reliable gigs, and start earning like Ramesh and Priya.
+            AI automates business research so you can work smart. Save your valuable time, win vastly more reliable gigs, and start earning like Ramesh and Priya.
           </p>
           <ul className="mb-12">
             <li><strong>Define clients clearly.</strong></li>
             <li><strong>Use free tools first.</strong></li>
             <li><strong>Track and tweak weekly.</strong></li>
-            <li><strong>Start with 10 leads today.</strong></li>
+            <li><strong>Start with 10 companies today.</strong></li>
           </ul>
 
           {/* Inspirational Quote Graphic */}

@@ -5,7 +5,7 @@ import Toast, { useToast } from '../components/Toast';
 
 const INIT_WORKFLOWS = [
   { id: 'price-monitor',  title: 'E-commerce Price Monitor',    desc: 'Extracts competitor pricing daily from top 5 retail sites.', status: 'active',  lastRun: '2 hours ago', schedule: 'Daily',   destination: 'Google Sheets' },
-  { id: 'linkedin-leads', title: 'LinkedIn Lead Generator',      desc: 'Captures lead details matching job titles and regions.',     status: 'paused',  lastRun: '3 days ago',  schedule: 'Weekly',  destination: 'Webhook'       },
+  { id: 'linkedin-leads', title: 'LinkedIn Trend Monitor',      desc: 'Captures posting trends matching job titles and regions.',     status: 'paused',  lastRun: '3 days ago',  schedule: 'Weekly',  destination: 'Webhook'       },
   { id: 'tech-news',      title: 'Daily Tech News Digest',       desc: 'Scrapes HN and TechCrunch and emails a daily digest.',       status: 'active',  lastRun: 'Today, 6 AM',  schedule: 'Daily',   destination: 'Email Digest'  },
 ];
 

@@ -28,7 +28,7 @@ const SECTIONS = [
   {
     id: 'acceptable-use',
     title: '4. Acceptable use',
-    content: `We want Scrayva to be a positive force. The following is never allowed:\n\n• Scraping websites in a way that violates their Terms of Service or robots.txt, unless you have explicit permission\n• Collecting personal data without the knowledge or consent of the individuals involved\n• Conducting automated attacks (DDoS, credential stuffing, spam campaigns)\n• Bypassing paywalls, authentication systems, or access controls you don't have rights to\n• Using Scrayva to collect, store, or distribute content that is illegal, harmful, or violates intellectual property rights\n• Attempting to reverse-engineer, copy, or resell the Scrayva platform\n\nWe reserve the right to suspend or permanently terminate accounts that violate these terms without a refund.`,
+    content: `We want Scrayva to be a positive force. The following is never allowed:\n\n• Automated browsing in a way that violates their Terms of Service or robots.txt, unless you have explicit permission\n• Collecting personal data without the knowledge or consent of the individuals involved\n• Conducting automated attacks (DDoS, credential stuffing, spam campaigns)\n• Bypassing paywalls, authentication systems, or access controls you don't have rights to\n• Using Scrayva to collect, store, or distribute content that is illegal, harmful, or violates intellectual property rights\n• Attempting to reverse-engineer, copy, or resell the Scrayva platform\n\nWe reserve the right to suspend or permanently terminate accounts that violate these terms without a refund.`,
   },
   {
     id: 'payment-billing',

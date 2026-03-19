@@ -31,7 +31,7 @@ export default function Landing() {
     <div className="bg-[#0b0f1a] text-slate-200 font-sans selection:bg-brand-primary/30">
       <Head>
         <title>Scrayva | Turn Browser Tasks into Business Outcomes</title>
-        <meta name="description" content="Autonomous AI agents that navigate the web, find leads, monitor competitors, and extract structured data." />
+        <meta name="description" content="Autonomous AI agents that navigate the web, conduct market research, monitor competitors, and extract structured data." />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
       </Head>
 
@@ -60,7 +60,7 @@ export default function Landing() {
 
           <p data-reveal data-delay="300"
             className="max-w-2xl mx-auto text-lg md:text-xl text-slate-400 mb-10 leading-relaxed">
-            Autonomous AI agents that navigate the web, find leads, monitor competitors, and extract structured data—so you can focus on building, not browsing.
+            Autonomous AI agents that navigate the web, conduct market research, monitor competitors, and extract structured data—so you can focus on building, not browsing.
           </p>
 
           <div data-reveal data-delay="450"
@@ -123,7 +123,7 @@ export default function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               { title: 'Web Task Execution',   desc: 'Point-and-click or prompt-driven automation that navigates any website exactly like a human would.',               delay: '0'   },
-              { title: 'Lead Generation',      desc: 'Scan LinkedIn, directories, and social platforms to identify and verify high-intent prospects automatically.',     delay: '100' },
+              { title: 'Market Research',      desc: 'Scan public data from industry directories and social platforms to extract and center high-value market intel automatically.',     delay: '100' },
               { title: 'Competitor Monitoring',desc: 'Stay updated on price changes, feature launches, and SEO moves with scheduled daily snapshots.',                   delay: '200' },
               { title: 'Structured Exports',   desc: 'Turn messy HTML into clean JSON, CSV, or direct database entries via our robust API and webhooks.',                delay: '300' },
               { title: 'Approval Workflows',   desc: 'Human-in-the-loop controls. Let the AI do the heavy lifting, then review and approve before final actions.',       delay: '400' },
@@ -186,7 +186,7 @@ export default function Landing() {
                     <p className="mb-1">&gt; Initializing browser session...</p>
                     <p className="mb-1">&gt; Navigating to linkedin.com/search</p>
                     <p className="mb-1 text-yellow-400">&gt; Handling Cloudflare check... Success.</p>
-                    <p className="mb-1">&gt; Scraping page 1 of results</p>
+                    <p className="mb-1">&gt; Analyzing page 1 of results</p>
                     <p className="mb-1">&gt; Found: John Doe (Founder, AlphaDev)</p>
                     <p className="mb-1">&gt; Found: Sarah Smith (CEO, CloudX)</p>
                     <p className="mb-1">&gt; Found: Mike Jones (CTO, Web3Flow)</p>
@@ -221,7 +221,7 @@ export default function Landing() {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">For Agencies</h3>
-                <p className="text-slate-400 mb-4">Scale lead generation and market research for 50+ clients simultaneously without increasing your headcount.</p>
+                <p className="text-slate-400 mb-4">Scale business intelligence and market research for 50+ clients simultaneously without increasing your headcount.</p>
                 <ul className="text-sm text-slate-300 space-y-2">
                   <li className="flex items-center gap-2">
                     <svg className="w-4 h-4 text-brand-primary" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" /></svg>

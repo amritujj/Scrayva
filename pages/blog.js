@@ -7,7 +7,7 @@ export default function Blog() {
     <div className="dark min-h-screen selection:bg-primary-container/30 text-on-surface bg-background font-body">
       <Head>
         <title>Scrayva Blog - AI Automation Insights | scrayva.space</title>
-        <meta name="description" content="Learn web automation, lead generation, and business workflows with Scrayva. Discover how AI transforms your digital tasks." />
+        <meta name="description" content="Learn web automation, market research analysis, and business workflows with Scrayva. Discover how AI transforms your digital tasks." />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </Head>
@@ -39,7 +39,7 @@ export default function Blog() {
               Scrayva Blog — <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">AI Automation Insights</span>
             </h1>
             <p className="text-xl text-on-surface-variant font-body max-w-2xl mb-12 leading-relaxed">
-              Master the art of web automation. Learn how to scale lead generation, optimize business workflows, and reclaim your time with AI-driven intelligence.
+              Master the art of web automation. Learn how to scale market analysis, optimize business workflows, and reclaim your time with AI-driven intelligence.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link href="/signup" className="px-8 py-4 bg-gradient-to-r from-primary-dim to-secondary-dim text-on-primary font-bold rounded-xl flex items-center gap-2 hover:scale-[1.02] transition-transform active:scale-95">
@@ -68,7 +68,7 @@ export default function Blog() {
         <div className="flex items-center space-x-4 overflow-x-auto no-scrollbar pb-4">
           <button className="whitespace-nowrap px-6 py-2.5 rounded-full bg-primary text-on-primary font-semibold text-sm">All Topics</button>
           <button className="whitespace-nowrap px-6 py-2.5 rounded-full bg-surface-container-low border border-outline-variant/10 text-on-surface-variant hover:text-primary transition-colors font-medium text-sm">Web Automation</button>
-          <button className="whitespace-nowrap px-6 py-2.5 rounded-full bg-surface-container-low border border-outline-variant/10 text-on-surface-variant hover:text-primary transition-colors font-medium text-sm">Lead Generation</button>
+          <button className="whitespace-nowrap px-6 py-2.5 rounded-full bg-surface-container-low border border-outline-variant/10 text-on-surface-variant hover:text-primary transition-colors font-medium text-sm">Market Intelligence</button>
           <button className="whitespace-nowrap px-6 py-2.5 rounded-full bg-surface-container-low border border-outline-variant/10 text-on-surface-variant hover:text-primary transition-colors font-medium text-sm">Freelancer Tools</button>
           <button className="whitespace-nowrap px-6 py-2.5 rounded-full bg-surface-container-low border border-outline-variant/10 text-on-surface-variant hover:text-primary transition-colors font-medium text-sm">Business Growth</button>
           <button className="whitespace-nowrap px-6 py-2.5 rounded-full bg-surface-container-low border border-outline-variant/10 text-on-surface-variant hover:text-primary transition-colors font-medium text-sm">AI Workflows</button>
@@ -88,10 +88,10 @@ export default function Blog() {
               <span className="text-on-surface-variant text-xs font-medium">8 min read</span>
             </div>
             <h2 className="text-3xl lg:text-4xl font-headline font-bold text-on-surface leading-tight mb-6">
-              How Scrayva Automates Lead Generation in 5 Minutes
+              How Scrayva Automates Market Analysis in 5 Minutes
             </h2>
             <p className="text-on-surface-variant mb-8 leading-relaxed">
-              Stop manually scraping LinkedIn and Google Maps. Discover how our AI agents navigate complex websites to find verified leads while you sleep.
+              Stop manually checking pricing pages and company websites. Discover how our AI agents navigate complex websites to extract valuable market data while you sleep.
             </p>
             <div className="flex items-center justify-between mt-auto pt-8 border-t border-outline-variant/10">
               <div className="flex items-center gap-3">
@@ -154,7 +154,7 @@ export default function Blog() {
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-tertiary/10 text-tertiary">Freelance</span>
                 <span className="text-[10px] text-on-surface-variant uppercase font-medium">12 min read</span>
               </div>
-              <h4 className="text-xl font-headline font-bold text-on-surface mb-4 group-hover:text-primary transition-colors">Freelancer Guide: Automate Client Research with AI</h4>
+              <h4 className="text-xl font-headline font-bold text-on-surface mb-4 group-hover:text-primary transition-colors">Freelancer Guide: Automate Business Research with AI</h4>
               <p className="text-sm text-on-surface-variant mb-6 line-clamp-3">Stop cold pitching blindly. Use Scrayva to build detailed profiles of potential clients automatically.</p>
               <div className="mt-auto flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-secondary-dim/20"></div>
@@ -190,8 +190,8 @@ export default function Blog() {
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-secondary/10 text-secondary">Business</span>
                 <span className="text-[10px] text-on-surface-variant uppercase font-medium">10 min read</span>
               </div>
-              <h4 className="text-xl font-headline font-bold text-on-surface mb-4 group-hover:text-primary transition-colors">Lead Generation Automation for Small Businesses</h4>
-              <p className="text-sm text-on-surface-variant mb-6 line-clamp-3">Affordable ways for small shops to build massive prospect lists using modern AI scrapers.</p>
+              <h4 className="text-xl font-headline font-bold text-on-surface mb-4 group-hover:text-primary transition-colors">Market Analysis Automation for Small Businesses</h4>
+              <p className="text-sm text-on-surface-variant mb-6 line-clamp-3">Affordable ways for small shops to build massive data intelligence using modern AI agents.</p>
               <div className="mt-auto flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-primary-dim/20"></div>
                 <span className="text-xs font-semibold text-on-surface">Sarah Bloom</span>
@@ -210,7 +210,7 @@ export default function Blog() {
                 <span className="text-[10px] text-on-surface-variant uppercase font-medium">6 min read</span>
               </div>
               <h4 className="text-xl font-headline font-bold text-on-surface mb-4 group-hover:text-primary transition-colors">How Scrayva Found 500 Coaching Centers in Delhi</h4>
-              <p className="text-sm text-on-surface-variant mb-6 line-clamp-3">A deep dive into localized lead generation at scale across specialized educational sectors.</p>
+              <p className="text-sm text-on-surface-variant mb-6 line-clamp-3">A deep dive into localized market research at scale across specialized educational sectors.</p>
               <div className="mt-auto flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-secondary-dim/20"></div>
                 <span className="text-xs font-semibold text-on-surface">Deepak Rao</span>
