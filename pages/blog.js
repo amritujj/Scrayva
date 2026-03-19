@@ -55,10 +55,10 @@ export default function Blog() {
               Master the art of web automation. Learn how to scale lead generation, optimize business workflows, and reclaim your time with AI-driven intelligence.
             </p>
             <div className="flex flex-wrap gap-4">
-              <button className="px-8 py-4 bg-gradient-to-r from-primary-dim to-secondary-dim text-on-primary font-bold rounded-xl flex items-center gap-2 hover:scale-[1.02] transition-transform active:scale-95">
+              <Link href="/signup" className="px-8 py-4 bg-gradient-to-r from-primary-dim to-secondary-dim text-on-primary font-bold rounded-xl flex items-center gap-2 hover:scale-[1.02] transition-transform active:scale-95">
                 Start Free Trial
                 <span className="material-symbols-outlined text-sm">arrow_forward</span>
-              </button>
+              </Link>
               <div className="flex -space-x-3 items-center ml-4">
                 <div className="w-10 h-10 rounded-full border-2 border-surface bg-surface-container-high flex items-center justify-center overflow-hidden">
                   <img className="w-full h-full object-cover" data-alt="User avatar profile picture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_2hNzrpfQ1G_S7hjqaGSRRj7iSw6hX0z4yza-rc542T1LGrnaNfvxKqGoRB-TIRF05SQhRBLVjgMefRHpIqRBcxgH6_y6L_F7UCQE7aVoUWth08RzyXr4fVVAZHzIGZrwWgxnUbscMiuHXtvrD7FsZaAHqYW2O8sWYC4xPDpMJghyH4PaPYeyMZppMD3yMttRGVRDFKOBBx1xu5wfa0eb9S28fX4bYphAJrNWUsWqHOpOHoGBuiFmkBAx_sGhwtTP77Wf82gn9WY" alt="User avatar" />
@@ -140,7 +140,7 @@ export default function Blog() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Post 1 */}
-          <div className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
+          <Link href="/blog" className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
             <div className="aspect-[16/10] overflow-hidden">
               <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Student studying with computer and automation icons" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCN1XqXBrO57monrTjS5WgbgrYk9F4ppnl34pZK2i9HIzNKYHjtX00UZkRR7V4SdpAEaqM6U_F--2ucnNaHCBQiWaWxcZFxl02eSWAAxvmhYitq3hoEgs8y5-yyrl2_y6LblxvvwBxcM1K4rqa14nlhsYc2nrJS9kOUAznIZCKplF8KzVYbQUwA-3xI0nG1sqTF2RW_pbBmdd2fx7esRsAr_GaRD9b-bPVWp6kkA8Gr6UQLkbHjtTW01PSbavdouoHFcBMdbyr9YvA" alt="Student matching graphic" />
             </div>
@@ -156,9 +156,9 @@ export default function Blog() {
                 <span className="text-xs font-semibold text-on-surface">Elena Vance</span>
               </div>
             </div>
-          </div>
+          </Link>
           {/* Post 2 */}
-          <div className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
+          <Link href="/blog" className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
             <div className="aspect-[16/10] overflow-hidden">
               <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Freelancer working on laptop in a modern cafe" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD38E0CwLjE2vWcsAzyIDqFIhjXJIRExFiTzW5DubVezQIGWpEzAopS6GkCsSayCQL9aPU_Kx593YB-UKw09PNcTSZ2WrTGil4znaRkThIxvZLPhigz4IgyMFEutdqqycwnBaAXz_5Wez3j8lu0ejo3S5Uo6pcTOJq7s0goDu8eW4QKt7U8PpwZordHT1j_M9orjN39FM3l1XtvKzmwznv4omV0VF9Lvfh5XLIxY8ANIwMzGr5TGPjIi_kFWnwTOOrPx7M_AGbh18U" alt="Freelancer image" />
             </div>
@@ -174,9 +174,9 @@ export default function Blog() {
                 <span className="text-xs font-semibold text-on-surface">Jordan Smith</span>
               </div>
             </div>
-          </div>
+          </Link>
           {/* Post 3 */}
-          <div className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
+          <Link href="/blog" className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
             <div className="aspect-[16/10] overflow-hidden">
               <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Stock market chart showing price fluctuations" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfyfp9YINs4tHtjj1q7mRNi9DU-q9gueYhU403A7l7EFwZn-THwhC6Si-z3sONylADy0dz1rQdyzO40lw4Mzvj24BKUs-UDXw2-jV9lxvpW_tTGhOfNblh1j2XnSMsXHM3K0kwbHP-Db0oetdNxBZHfU6iDFNPpjfCOxxibVOJM4W5dOQAUApxlu-xdUbTL_ZeY9ngjZH3l-Jb96lMJ35mCEIe5KLw2gH-LSE0AdCdwV69mDGE8_ZhbkMaQR3BQn50NlqmIaCLgUY" alt="Stock Market data" />
             </div>
@@ -192,9 +192,9 @@ export default function Blog() {
                 <span className="text-xs font-semibold text-on-surface">Marcus Chen</span>
               </div>
             </div>
-          </div>
+          </Link>
           {/* Post 4 */}
-          <div className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
+          <Link href="/blog" className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
             <div className="aspect-[16/10] overflow-hidden">
               <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Business team meeting in a dark office" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYQQhvoIEjp02imZkJ3swVd-31gjcemxBCHetdzZP6w1z1yztoZTD-GD3IYmO2NVlmivdOUuGV4SMj-dLhM8BDaOd5cshAQxUTkqYLjBExDGa6ZgyneLXOMaB9nZjDpm1Wj3o5KqJE1u8pTNwhdjgv2V4dSX84ywvYgFEbTQE2B0KIEFt06t85V0SVUaqPhvI4hC4V1Lg4khw4TKJx4eo3fQArLna_lPWjojcKJsqS8OTxjwW0RiWTa_wwRUYRDtc2fra0p_gzM3Q" alt="Business team graphic" />
             </div>
@@ -210,9 +210,9 @@ export default function Blog() {
                 <span className="text-xs font-semibold text-on-surface">Sarah Bloom</span>
               </div>
             </div>
-          </div>
+          </Link>
           {/* Post 5 */}
-          <div className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
+          <Link href="/blog" className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
             <div className="aspect-[16/10] overflow-hidden relative">
               <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Abstract view of Delhi city landscape" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkdFHU0JcAk28_yrt1ACCQCB7-H9oOIj6nvLHFu-uaoxAWkBmew1e1xU3hDDgtwVEvOv2OvhR_ht5RkW_c31NMfVYHGO35ZHTElB0zn4rd575rbAF1Xqoc2e1uRmpvaOI1KaQ3FzBiF2rZssHWjCM6vF6XxHESH94EJn-EhNUqAuEdXQOQpps0yIignzmHU7DPDa-D6aZP0zTz_Qc1IQKPinrWqwuawvglPD-BKUGsfxbsAmRG5UIBr9jFUdPI3Az_DG5geoUi9Os" alt="City view abstract" />
               <div className="absolute top-4 right-4 bg-background/80 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-white">CASE STUDY</div>
@@ -229,9 +229,9 @@ export default function Blog() {
                 <span className="text-xs font-semibold text-on-surface">Deepak Rao</span>
               </div>
             </div>
-          </div>
+          </Link>
           {/* Post 6 */}
-          <div className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
+          <Link href="/blog" className="group flex flex-col bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container transition-all duration-300 transform hover:-translate-y-1">
             <div className="aspect-[16/10] overflow-hidden">
               <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Circuit board close up with neon lights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVLNO2cW8XapQ-scrs2eF6mU-AaAbV1yM2ZZBpige9uWuE8pP4wwWUU3WzRd43x_1TdAWR6UIWer0Xfx5ZXirIRLf_SYzX-2PWa6QzMuwISVsDxuEUWvFi-Ny8eSne2oaahq0zfDSBcn6ar3v9LKxS5kJS2jDAeovsCIky28kL6w2mV6551eF_fK0BAS1G0uend5sRa5KLS5oF75WkjS08KQZrQwVXEEZqaBrTxZ2ngdPoV_fI9Y5a0FgdNy2VqHxW62Wr0WSmlC0" alt="Tech neon board" />
             </div>
@@ -247,10 +247,10 @@ export default function Blog() {
                 <span className="text-xs font-semibold text-on-surface">Liam Carter</span>
               </div>
             </div>
-          </div>
+          </Link>
         </div>
         <div className="flex justify-center mt-20">
-          <button className="px-12 py-4 rounded-xl bg-surface-container-high border border-outline-variant/20 hover:border-primary/50 text-on-surface font-semibold transition-all">Load More Stories</button>
+          <button onClick={() => window.scrollTo(0, 0)} className="px-12 py-4 rounded-xl bg-surface-container-high border border-outline-variant/20 hover:border-primary/50 text-on-surface font-semibold transition-all">Load More Stories</button>
         </div>
       </section>
 
@@ -267,9 +267,9 @@ export default function Blog() {
                 Experience the power of Scrayva without spending a dime. Set up your first workflow in under 2 minutes.
               </p>
               <div className="flex flex-wrap gap-12 items-center">
-                <button className="px-10 py-5 bg-gradient-to-r from-primary-dim to-secondary-dim text-on-primary font-bold rounded-xl shadow-2xl shadow-primary/30 active:scale-95 transition-all">
+                <Link href="/signup" className="px-10 py-5 bg-gradient-to-r from-primary-dim to-secondary-dim text-on-primary font-bold rounded-xl shadow-2xl shadow-primary/30 active:scale-95 transition-all">
                   Start Building Now
-                </button>
+                </Link>
                 <div className="flex flex-col">
                   <span className="text-3xl font-headline font-black text-white">5K+</span>
                   <span className="text-xs uppercase tracking-widest text-on-surface-variant font-bold">Tasks Automated</span>
