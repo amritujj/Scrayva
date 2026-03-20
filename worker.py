@@ -445,7 +445,14 @@ async def run_agent(request: AgentRequest):
                 # Step 1: Init Gemini LLM (FRESH INSTANCE PER ATTEMPT)
                 logger.info("[task:%s] Step 1/5 — Initialising LLM", task_id)
                 from langchain_google_genai import ChatGoogleGenerativeAI
-                llm = ChatGoogleGenerativeAI(model=os.environ.get("GEMINI_MODEL", "gemini-2.0-flash"), temperature=0.0)
+                _raw_keys = os.environ.get("GOOGLE_API_KEY", "")
+                _initial_key = [k.strip() for k in _raw_keys.split(",") if k.strip()][0] if _raw_keys else ""
+                
+                llm = ChatGoogleGenerativeAI(
+                    model=os.environ.get("GEMINI_MODEL", "gemini-2.0-flash"), 
+                    temperature=0.0,
+                    google_api_key=_initial_key
+                )
 
                 # Step 2: Create browser-use Browser (FRESH INSTANCE PER ATTEMPT)
                 from browser_use import Browser
@@ -871,7 +878,14 @@ async def debug_agent(request: DebugAgentRequest):
     try:
         logger.info("[debug-agent:%s] Init LLM", task_id)
         from langchain_google_genai import ChatGoogleGenerativeAI
-        llm = ChatGoogleGenerativeAI(model=os.environ.get("GEMINI_MODEL", "gemini-2.0-flash"), temperature=0.0)
+        _debug_raw_keys = os.environ.get("GOOGLE_API_KEY", "")
+        _debug_initial_key = [k.strip() for k in _debug_raw_keys.split(",") if k.strip()][0] if _debug_raw_keys else ""
+        
+        llm = ChatGoogleGenerativeAI(
+            model=os.environ.get("GEMINI_MODEL", "gemini-2.0-flash"), 
+            temperature=0.0,
+            google_api_key=_debug_initial_key
+        )
 
         logger.info("[debug-agent:%s] Init Browser explicitly", task_id)
         browser_instance = None
