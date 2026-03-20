@@ -259,56 +259,52 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 _original_agenerate = ChatGoogleGenerativeAI._agenerate
 
 async def _patched_agenerate(self, *args, **kwargs):
+    import os
     keys = [k.strip() for k in os.environ.get("GOOGLE_API_KEY", "").split(",") if k.strip()]
     if not keys:
         return await _original_agenerate(self, *args, **kwargs)
         
+    # Read the current key of 'self' (the original LLM called by browser-use)
+    current_key = getattr(self, "google_api_key", "")
+    if hasattr(current_key, "get_secret_value"):
+        current_key = current_key.get_secret_value()
+        
+    try:
+        start_idx = keys.index(current_key)
+    except ValueError:
+        start_idx = 0
+
     last_exc = None
-    for _ in range(len(keys)):
+    
+    # Try all keys starting from the current key
+    for offset in range(len(keys)):
+        idx = (start_idx + offset) % len(keys)
+        test_key = keys[idx]
+        
+        # If testing a DIFFERENT key than 'self', we create a completely isolated, 
+        # fresh LLM instance and execute _agenerate entirely on IT!
+        if offset > 0:
+            logger.warning("Gemini 429 Quota Exceeded. Hot-swapping to isolated API key (idx %d -> %d)...", (idx - 1) % len(keys), idx)
+            isolated_llm = ChatGoogleGenerativeAI(
+                model=getattr(self, "model", "gemini-2.0-flash"),
+                temperature=getattr(self, "temperature", 0.0),
+                google_api_key=test_key
+            )
+            executor = isolated_llm
+        else:
+            # First attempt uses the original 'self' object naturally
+            executor = self
+
         try:
-            return await _original_agenerate(self, *args, **kwargs)
+            return await _original_agenerate(executor, *args, **kwargs)
         except Exception as e:
             err_str = str(e).lower()
             if "429" in err_str or "quota" in err_str or "exhausted" in err_str:
                 last_exc = e
-                # Identify current key
-                current_key = getattr(self, "google_api_key", "")
-                if hasattr(current_key, "get_secret_value"):
-                    current_key = current_key.get_secret_value()
-                
-                try:
-                    current_idx = keys.index(current_key)
-                except ValueError:
-                    current_idx = 0
-                    
-                next_idx = (current_idx + 1) % len(keys)
-                next_key = keys[next_idx]
-                
-                logger.warning("Gemini 429 Quota Exceeded. Rotating API key (idx %d -> %d)...", current_idx, next_idx)
-                
-                # Hot-swap the key by creating a fresh instance and transferring its __dict__ 
-                # (since pydantic v2 prevents direct mutation cleanly)
-                fresh_llm = ChatGoogleGenerativeAI(
-                    model=getattr(self, "model", "gemini-2.0-flash"),
-                    temperature=getattr(self, "temperature", 0.0),
-                    google_api_key=next_key
-                )
-                
-                # Forcefully inject the new keys, bypassing Pydantic protections
-                self.__dict__.update(fresh_llm.__dict__)
-                if hasattr(self, "__pydantic_private__") and hasattr(fresh_llm, "__pydantic_private__"):
-                    if fresh_llm.__pydantic_private__ is not None:
-                        if self.__pydantic_private__ is None:
-                            object.__setattr__(self, "__pydantic_private__", {})
-                        self.__pydantic_private__.update(fresh_llm.__pydantic_private__)
-                
-                # Clear cached clients to force reconstruction with the new API key
-                for _cache_attr in ["_client", "_async_client", "_generative_model"]:
-                    if hasattr(self, _cache_attr):
-                        object.__delattr__(self, _cache_attr)
-                        
+                continue # move to next key in loop without mutating the current object!
             else:
-                raise e
+                raise e # Real error (like 400 Bad Request), bubble it up
+                
     raise last_exc
 
 ChatGoogleGenerativeAI._agenerate = _patched_agenerate
