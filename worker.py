@@ -515,67 +515,46 @@ async def run_agent(request: AgentRequest):
 
                     fallback_text = None
 
-                    # ── Stage 1: browser-use built-in extracted_content() ──────────
-                    # Collects output from all extract_content actions during the run.
+                    # ── Unified Fallback for browser-use 0.1.28 ─────────────────────
                     try:
-                        if hasattr(result, "extracted_content"):
-                            extracted = result.extracted_content()
-                            if extracted:
-                                combined = "\n\n".join(str(e) for e in extracted if e)
-                                if combined.strip():
-                                    fallback_text = combined.strip()
-                                    logger.info("[task:%s] Fallback Stage 1: extracted_content() gave %d chars", task_id, len(fallback_text))
-                    except Exception as _e:
-                        logger.warning("[task:%s] Fallback Stage 1 failed: %s", task_id, _e)
-
-                    # ── Stage 2: action_results() — scan all action results ─────────
-                    if not fallback_text:
-                        try:
-                            if hasattr(result, "action_results"):
-                                action_results = result.action_results()
-                                # Collect non-empty text content from all results
-                                texts = []
-                                for ar in (action_results or []):
-                                    for attr in ("extracted_content", "content", "output", "text"):
-                                        val = getattr(ar, attr, None)
-                                        if val and str(val).strip():
-                                            texts.append(str(val).strip())
+                        # In 0.1.28 result is a list. In newer versions it's an object with .history
+                        history_list = result if isinstance(result, list) else getattr(result, "history", [])
+                        
+                        if history_list:
+                            # Stage 1: Look for explicit action outputs or extracted_content
+                            for step in reversed(history_list):
+                                if hasattr(step, "result") and step.result:
+                                    # result is a list of ActionResults
+                                    for ar in reversed(step.result):
+                                        if hasattr(ar, "extracted_content") and ar.extracted_content:
+                                            fallback_text = str(ar.extracted_content).strip()
                                             break
-                                if texts:
-                                    fallback_text = "\n\n".join(texts)
-                                    logger.info("[task:%s] Fallback Stage 2: action_results() gave %d chars across %d results", task_id, len(fallback_text), len(texts))
-                        except Exception as _e:
-                            logger.warning("[task:%s] Fallback Stage 2 failed: %s", task_id, _e)
-
-                    # ── Stage 3: scan all history steps (not just last) ─────────────
-                    if not fallback_text:
-                        try:
-                            if hasattr(result, "history") and result.history:
-                                texts = []
-                                for step in reversed(result.history):  # newest first
-                                    for attr in ("model_output", "output", "text", "content"):
-                                        candidate = getattr(step, attr, None)
+                                        if hasattr(ar, "output") and ar.output and "error" not in str(ar.output).lower():
+                                            fallback_text = str(ar.output).strip()
+                                            break
+                                    if fallback_text:
+                                        logger.info("[task:%s] Fallback Stage 1: extracted from step.result", task_id)
+                                        break
+                                        
+                            # Stage 2: Look at model_output thought process
+                            if not fallback_text:
+                                for step in reversed(history_list):
+                                    if hasattr(step, "model_output") and step.model_output:
+                                        candidate = getattr(step.model_output, "text", None) or getattr(step.model_output, "content", None)
                                         if candidate and str(candidate).strip():
-                                            texts.append(str(candidate).strip())
+                                            fallback_text = str(candidate).strip()
+                                            logger.info("[task:%s] Fallback Stage 2: extracted from model_output", task_id)
                                             break
-                                    if len(texts) >= 3:
-                                        break  # take last 3 steps worth
-                                if texts:
-                                    fallback_text = "\n\n".join(reversed(texts))
-                                    logger.info("[task:%s] Fallback Stage 3: history scan gave %d chars", task_id, len(fallback_text))
-                        except Exception as _e:
-                            logger.warning("[task:%s] Fallback Stage 3 failed: %s", task_id, _e)
 
-                    # ── Stage 4: last-resort model_dump ────────────────────────────
-                    if not fallback_text:
-                        try:
-                            if hasattr(result, "history") and result.history:
-                                last_event = result.history[-1]
-                                dump_str = str(last_event.model_dump() if hasattr(last_event, "model_dump") else last_event)
+                            # Stage 3: Raw dump of the last step as a last resort
+                            if not fallback_text:
+                                last_step = history_list[-1]
+                                dump_str = str(last_step.model_dump() if hasattr(last_step, "model_dump") else last_step)
                                 fallback_text = dump_str[:4000]
-                                logger.info("[task:%s] Fallback Stage 4: model_dump gave %d chars", task_id, len(fallback_text))
-                        except Exception:
-                            fallback_text = None
+                                logger.info("[task:%s] Fallback Stage 3: dumped step model (%d chars)", task_id, len(fallback_text))
+
+                    except Exception as fallback_err:
+                        logger.warning("[task:%s] Unified fallback failed: %s", task_id, fallback_err)
 
                     if fallback_text:
                         # Treat as a soft success — save to Supabase as completed with a note
