@@ -231,7 +231,6 @@ async def lifespan(app: FastAPI):
                         RUNTIME["playwright"]["ok"] = True
                         RUNTIME["playwright"]["error"] = ""
                         logger.info("✓ Playwright async logic verified successfully after auto-install")
-                        return
                 except Exception as retry_err:
                     err_msg = f"Auto-install failed: {type(retry_err).__name__}: {str(retry_err)}"
                     RUNTIME["playwright"]["error"] = err_msg
