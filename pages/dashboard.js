@@ -98,7 +98,10 @@ export default function Dashboard() {
       if (res.ok) {
         const task = await res.json();
         setCredits(prev => Math.max(0, (prev || 0) - 1));
-        showToast('Task queued! Opening details...', 'success');
+        const queueMsg = tier === 'Free'
+          ? 'Task queued! Your task will start in ~60s (Free plan). Upgrade for instant start.'
+          : 'Task queued! Starting immediately...';
+        showToast(queueMsg, 'success');
         setPrompt('');
         setTimeout(() => router.push(`/tasks/${task.id}`), 800);
       } else {
@@ -146,6 +149,7 @@ export default function Dashboard() {
     if (s === 'completed') return <span className="px-2 py-1 text-[10px] font-bold rounded border bg-green-500/10 text-green-400 border-green-500/20 uppercase tracking-wider">Completed</span>;
     if (s === 'failed')    return <span className="px-2 py-1 text-[10px] font-bold rounded border bg-red-500/10 text-red-400 border-red-500/20 uppercase tracking-wider">Failed</span>;
     if (s === 'running')   return <span className="px-2 py-1 text-[10px] font-bold rounded border bg-sky-500/10 text-sky-400 border-sky-500/20 uppercase tracking-wider flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>Running</span>;
+    if (s === 'queued')    return <span className="px-2 py-1 text-[10px] font-bold rounded border bg-amber-500/10 text-amber-400 border-amber-500/20 uppercase tracking-wider flex items-center gap-1" title="Waiting in queue — Free tier tasks start after a short delay"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>Queued</span>;
     return <span className="px-2 py-1 text-[10px] font-bold rounded border bg-slate-500/10 text-slate-400 border-slate-500/20 uppercase tracking-wider">{s}</span>;
   };
 
@@ -209,12 +213,12 @@ export default function Dashboard() {
       {/* Main */}
       <main className="flex-1 ml-0 md:ml-64 p-4 md:p-8 pb-24 md:pb-8 min-w-0 overflow-x-hidden">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8" data-reveal="fade-up">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4" data-reveal="fade-up">
           <div>
-            <h2 className="text-3xl font-bold">Operations Hub</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold">Operations Hub</h2>
             <p className="text-dark-muted mt-1">Automate any web task with a single prompt.</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <button onClick={handleExportCSV}
               className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm border border-dark-border transition-all">
               Export CSV
@@ -316,13 +320,17 @@ export default function Dashboard() {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
           <span className="text-[10px] font-medium">Dash</span>
         </Link>
+        <Link href="/templates" className="flex flex-col items-center gap-1 text-dark-muted hover:text-white transition-colors">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
+          <span className="text-[10px] font-medium">Templates</span>
+        </Link>
         <Link href="/workflows" className="flex flex-col items-center gap-1 text-dark-muted hover:text-white transition-colors">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
           <span className="text-[10px] font-medium">Flows</span>
         </Link>
         <Link href="/settings" className="flex flex-col items-center gap-1 text-dark-muted hover:text-white transition-colors">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
-          <span className="text-[10px] font-medium">Auto</span>
+          <span className="text-[10px] font-medium">Settings</span>
         </Link>
       </div>
 

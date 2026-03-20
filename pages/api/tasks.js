@@ -19,6 +19,10 @@ export default async function handler(req, res) {
 
       const tier = user.user_metadata?.tier || 'Free';
       const credits = user.user_metadata?.credits ?? (tier === 'Pro' ? 50 : 5);
+
+      // Priority: Ultimate=2 (highest), Pro=1, Free=0 (lowest = waits longest)
+      const TIER_PRIORITY = { 'Ultimate': 2, 'Pro': 1, 'Free': 0, 'None': 0 };
+      const priority = TIER_PRIORITY[tier] ?? 0;
       
       if (credits <= 0) {
         return res.status(403).json({ error: `You have zero credits left. Upgrade to run more ${tier} tier operations.` });
@@ -32,16 +36,16 @@ export default async function handler(req, res) {
       });
       if (updateError) throw updateError;
       
-      // 1. Create task in Supabase first
+      // 1. Create task in Supabase with priority
       const { data: task, error: insertError } = await supabase
         .from('tasks')
-        .insert([{ prompt, status: 'queued', user_id: user.id }])
+        .insert([{ prompt, status: 'queued', user_id: user.id, priority }])
         .select()
         .single();
         
       if (insertError) throw insertError;
 
-      // 2. Trigger worker (non-blocking)
+      // 2. Trigger worker (non-blocking) — passes tier so worker can apply queue delay
       // We don't await the full agent run here since it can take minutes.
       // The worker will update the Supabase record when finished.
       fetch(`${workerUrl}/run-agent`, {
@@ -49,7 +53,9 @@ export default async function handler(req, res) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: task.prompt,
-          task_id: task.id
+          task_id: task.id,
+          tier: tier,          // ← passed so worker applies correct queue delay
+          priority: priority   // ← for logging/debugging
         })
       }).catch(err => {
         // We catch here so a worker fetch failure DOES NOT crash the API response.

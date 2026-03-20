@@ -291,9 +291,24 @@ def _set_task_status(
 class AgentRequest(BaseModel):
     prompt: str
     task_id: str
+    tier: str = "Free"       # passed from Next.js API — used to set queue delay
+    priority: int = 0        # 0=Free, 1=Pro, 2=Ultimate — for logging
 
 class DebugAgentRequest(BaseModel):
     task_id: str
+
+
+# ── Tier configuration ────────────────────────────────────────────────────────────
+# queue_delay_s : seconds to sleep before starting the agent run.
+#   Free tier tasks sleep while Pro/Ultimate tasks that arrive during this window
+#   will be picked up by the worker first (natural priority queue).
+# max_steps     : how many browser steps the agent is allowed to take.
+TIER_CONFIG = {
+    "Free":     {"queue_delay_s": 30,  "max_steps": 15},
+    "Pro":      {"queue_delay_s": 0,   "max_steps": 15},
+    "Ultimate": {"queue_delay_s": 0,   "max_steps": 20},
+    "None":     {"queue_delay_s": 30,  "max_steps": 15},  # unactivated account = Free
+}
 
 
 # ── Main endpoint ─────────────────────────────────────────────────────────────────
@@ -303,15 +318,15 @@ async def run_agent(request: AgentRequest):
     prompt = request.prompt.strip()
 
     logger.info(
-        "[task:%s] POST /run-agent received | prompt length=%d",
-        task_id, len(prompt),
+        "[task:%s] POST /run-agent received | tier=%s priority=%d prompt_len=%d",
+        task_id, request.tier, request.priority, len(prompt),
     )
 
     # Validate prompt is not empty
     if not prompt:
         return JSONResponse(status_code=422, content={"detail": "Prompt must not be empty."})
 
-    # Pre-flight: check all required env vars and return one clear error listing all missing
+    # Pre-flight: check all required env vars
     logger.info("[task:%s] Step 0 — Running environment pre-flight checks", task_id)
     missing = [v for v in REQUIRED_VARS if not os.environ.get(v)]
     if missing:
@@ -331,7 +346,24 @@ async def run_agent(request: AgentRequest):
         logger.error("[task:%s] Supabase init failed: %s", task_id, exc)
         return JSONResponse(status_code=500, content={"detail": str(exc)})
 
-    # Mark running immediately — task will never be stuck at "queued" after this
+    # ── Tier-based queue delay ────────────────────────────────────────────────────
+    # Free tier tasks wait in queue to let Pro/Ultimate tasks skip ahead naturally.
+    tier = request.tier if request.tier in TIER_CONFIG else "Free"
+    cfg = TIER_CONFIG[tier]
+    queue_delay = cfg["queue_delay_s"]
+    max_steps   = cfg["max_steps"]
+
+    if queue_delay > 0:
+        logger.info(
+            "[task:%s] ⏳ Tier=%s — applying %ds queue delay before execution starts. "
+            "Pro/Ultimate tasks will be picked up ahead of this one during the wait.",
+            task_id, tier, queue_delay,
+        )
+        # Keep task in 'queued' state during the wait window
+        await asyncio.sleep(queue_delay)
+        logger.info("[task:%s] ⏰ Queue delay elapsed. Starting execution now.", task_id)
+
+    # Mark running — task will never be stuck at "queued" after this
     _set_task_status(supabase, task_id, "running")
 
     # ── Agent execution ───────────────────────────────────────────────────────────
@@ -349,7 +381,7 @@ async def run_agent(request: AgentRequest):
                 logger.info("[task:%s] Step 1/5 — Initialising LLM", task_id)
                 from langchain_google_genai import ChatGoogleGenerativeAI
                 llm = ChatGoogleGenerativeAI(model=os.environ.get("GEMINI_MODEL", "gemini-2.0-flash"), temperature=0.0)
-                
+
                 # Step 2: Create browser-use Browser (FRESH INSTANCE PER ATTEMPT)
                 from browser_use import Browser
                 from browser_use.browser.browser import BrowserConfig
@@ -367,49 +399,99 @@ async def run_agent(request: AgentRequest):
                 )
                 logger.info("[task:%s] Step 2/5.1 — Custom local Browser explicitly instantiated", task_id)
                 
-                # Pass the raw user prompt directly — custom wrappers break Gemini tool-call formatting
-                # use_vision=False disables screenshots, each screenshot costs tokens and quota
+                # Wrap the user prompt with explicit browser-use instructions.
+                # Without this, Gemini sometimes answers from memory without browsing.
+                wrapped_prompt = (
+                    f"{prompt}\n\n"
+                    "IMPORTANT INSTRUCTIONS:\n"
+                    "1. You MUST use your browser tools to navigate to relevant websites and extract the requested information.\n"
+                    "2. Do NOT answer from memory — always browse the web to get fresh, accurate data.\n"
+                    "3. When you have collected all the requested information, call the 'done' action with a clear, complete summary of your findings.\n"
+                    "4. Format your final answer as structured text or JSON so it is easy to read."
+                )
+
                 agent = Agent(
-                    task=prompt,
+                    task=wrapped_prompt,
                     llm=llm,
                     browser=browser_instance,
-                    max_failures=1,     # Stop after 1 bad-format response; do not loop and burn quota
+                    max_failures=3,     # Allow up to 3 bad-format responses before giving up
                     use_vision=False,   # Disable screenshot captures to save token usage
                 )
-                logger.info("[task:%s] Step 2/5 — Agent created (max_failures=1, use_vision=False)", task_id)
+                logger.info("[task:%s] Step 2/5 — Agent created (max_failures=3, use_vision=False)", task_id)
 
-                # Step 3 & 4: Run the agent and Extract result
-                logger.info("[task:%s] Step 3/5 — agent.run() started (max_steps=15, timeout=300s)", task_id)
-                
-                # Hard step cap — keep low for simple tasks; raise per-task if needed
-                logger.info("[task:%s] Step 3/5 — agent.run() started (max_steps=8, timeout=180s)", task_id)
-                result = await asyncio.wait_for(agent.run(max_steps=8), timeout=180.0)
+                # Hard step cap — tier-dependent
+                logger.info("[task:%s] Step 3/5 — agent.run() started (max_steps=%d, timeout=300s)", task_id, max_steps)
+                result = await asyncio.wait_for(agent.run(max_steps=max_steps), timeout=300.0)
                 
                 final_result_str = result.final_result()
                 
                 # Check if it silently failed before returning
                 if not final_result_str or final_result_str.strip() == "":
-                    logger.warning("[task:%s] Attempt %d: final_result() is empty — trying fallback extraction from history.", task_id, attempt)
+                    logger.warning("[task:%s] Attempt %d: final_result() is empty — trying multi-stage fallback.", task_id, attempt)
 
-                    # ── Fallback: pull raw model_output from last history step ──
                     fallback_text = None
-                    if hasattr(result, "history") and result.history:
-                        last_event = result.history[-1]
-                        # browser-use stores the LLM's raw generation in several possible attributes
-                        for attr in ("model_output", "output", "text", "content"):
-                            candidate = getattr(last_event, attr, None)
-                            if candidate and str(candidate).strip():
-                                fallback_text = str(candidate).strip()
-                                logger.info("[task:%s] Fallback: found text in last_event.%s (%d chars)", task_id, attr, len(fallback_text))
-                                break
-                        # Last resort: full model_dump of the step
-                        if not fallback_text:
-                            try:
+
+                    # ── Stage 1: browser-use built-in extracted_content() ──────────
+                    # Collects output from all extract_content actions during the run.
+                    try:
+                        if hasattr(result, "extracted_content"):
+                            extracted = result.extracted_content()
+                            if extracted:
+                                combined = "\n\n".join(str(e) for e in extracted if e)
+                                if combined.strip():
+                                    fallback_text = combined.strip()
+                                    logger.info("[task:%s] Fallback Stage 1: extracted_content() gave %d chars", task_id, len(fallback_text))
+                    except Exception as _e:
+                        logger.warning("[task:%s] Fallback Stage 1 failed: %s", task_id, _e)
+
+                    # ── Stage 2: action_results() — scan all action results ─────────
+                    if not fallback_text:
+                        try:
+                            if hasattr(result, "action_results"):
+                                action_results = result.action_results()
+                                # Collect non-empty text content from all results
+                                texts = []
+                                for ar in (action_results or []):
+                                    for attr in ("extracted_content", "content", "output", "text"):
+                                        val = getattr(ar, attr, None)
+                                        if val and str(val).strip():
+                                            texts.append(str(val).strip())
+                                            break
+                                if texts:
+                                    fallback_text = "\n\n".join(texts)
+                                    logger.info("[task:%s] Fallback Stage 2: action_results() gave %d chars across %d results", task_id, len(fallback_text), len(texts))
+                        except Exception as _e:
+                            logger.warning("[task:%s] Fallback Stage 2 failed: %s", task_id, _e)
+
+                    # ── Stage 3: scan all history steps (not just last) ─────────────
+                    if not fallback_text:
+                        try:
+                            if hasattr(result, "history") and result.history:
+                                texts = []
+                                for step in reversed(result.history):  # newest first
+                                    for attr in ("model_output", "output", "text", "content"):
+                                        candidate = getattr(step, attr, None)
+                                        if candidate and str(candidate).strip():
+                                            texts.append(str(candidate).strip())
+                                            break
+                                    if len(texts) >= 3:
+                                        break  # take last 3 steps worth
+                                if texts:
+                                    fallback_text = "\n\n".join(reversed(texts))
+                                    logger.info("[task:%s] Fallback Stage 3: history scan gave %d chars", task_id, len(fallback_text))
+                        except Exception as _e:
+                            logger.warning("[task:%s] Fallback Stage 3 failed: %s", task_id, _e)
+
+                    # ── Stage 4: last-resort model_dump ────────────────────────────
+                    if not fallback_text:
+                        try:
+                            if hasattr(result, "history") and result.history:
+                                last_event = result.history[-1]
                                 dump_str = str(last_event.model_dump() if hasattr(last_event, "model_dump") else last_event)
-                                fallback_text = dump_str[:3000]
-                                logger.info("[task:%s] Fallback: using model_dump of last step (%d chars)", task_id, len(fallback_text))
-                            except Exception:
-                                fallback_text = None
+                                fallback_text = dump_str[:4000]
+                                logger.info("[task:%s] Fallback Stage 4: model_dump gave %d chars", task_id, len(fallback_text))
+                        except Exception:
+                            fallback_text = None
 
                     if fallback_text:
                         # Treat as a soft success — save to Supabase as completed with a note
@@ -727,7 +809,7 @@ async def debug_agent(request: DebugAgentRequest):
         logger.info("[debug-agent:%s] Init LLM", task_id)
         from langchain_google_genai import ChatGoogleGenerativeAI
         llm = ChatGoogleGenerativeAI(model=os.environ.get("GEMINI_MODEL", "gemini-2.0-flash"), temperature=0.0)
-        
+
         logger.info("[debug-agent:%s] Init Browser explicitly", task_id)
         browser_instance = None
         try:
