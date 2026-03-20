@@ -218,11 +218,24 @@ async def lifespan(app: FastAPI):
             RUNTIME["playwright"]["error"] = f"Check failed: {err_msg}"
             
             if "Executable doesn't exist" in err_msg or "executablePath" in err_msg:
-                logger.error(
-                    "✗ Playwright async check FAILED: Chromium missing (%s)\n"
-                    "  Fix: python -m playwright install chromium",
-                    err_msg
-                )
+                logger.warning("Chromium executable missing. Auto-installing Playwright browsers...")
+                try:
+                    import subprocess
+                    subprocess.run(["python", "-m", "playwright", "install", "chromium"], check=True)
+                    logger.info("Auto-installation complete. Retrying launch verification...")
+                    from playwright.async_api import async_playwright
+                    async with async_playwright() as _p_retry:
+                        browser = await _p_retry.chromium.launch(headless=IS_HEADLESS)
+                        await browser.close()
+                        RUNTIME["playwright"]["chromium_path"] = _p_retry.chromium.executable_path
+                        RUNTIME["playwright"]["ok"] = True
+                        RUNTIME["playwright"]["error"] = ""
+                        logger.info("✓ Playwright async logic verified successfully after auto-install")
+                        return
+                except Exception as retry_err:
+                    err_msg = f"Auto-install failed: {type(retry_err).__name__}: {str(retry_err)}"
+                    RUNTIME["playwright"]["error"] = err_msg
+                    logger.error("✗ Playwright auto-install and retry FAILED: %s", err_msg)
             elif "NotImplementedError" in err_msg and sys.platform == "win32":
                 logger.error(
                     "✗ Playwright async check FAILED: NotImplementedError\n"
