@@ -293,11 +293,20 @@ async def _patched_agenerate(self, *args, **kwargs):
                     temperature=getattr(self, "temperature", 0.0),
                     google_api_key=next_key
                 )
-                for attr, val in fresh_llm.__dict__.items():
-                    try:
-                        setattr(self, attr, val)
-                    except Exception:
-                        pass
+                
+                # Forcefully inject the new keys, bypassing Pydantic protections
+                self.__dict__.update(fresh_llm.__dict__)
+                if hasattr(self, "__pydantic_private__") and hasattr(fresh_llm, "__pydantic_private__"):
+                    if fresh_llm.__pydantic_private__ is not None:
+                        if self.__pydantic_private__ is None:
+                            object.__setattr__(self, "__pydantic_private__", {})
+                        self.__pydantic_private__.update(fresh_llm.__pydantic_private__)
+                
+                # Clear cached clients to force reconstruction with the new API key
+                for _cache_attr in ["_client", "_async_client", "_generative_model"]:
+                    if hasattr(self, _cache_attr):
+                        object.__delattr__(self, _cache_attr)
+                        
             else:
                 raise e
     raise last_exc
