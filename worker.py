@@ -252,6 +252,59 @@ async def lifespan(app: FastAPI):
     # Optional shutdown logic goes here
 
 
+# ── Monkey-patch ChatGoogleGenerativeAI for Multi-Key Rotation ───────────────────
+# This ensures that if browser-use hits a 429 (Quota Exceeded) mid-task, we can 
+# seamlessly swap in a new API key without failing the entire task.
+from langchain_google_genai import ChatGoogleGenerativeAI
+_original_agenerate = ChatGoogleGenerativeAI._agenerate
+
+async def _patched_agenerate(self, *args, **kwargs):
+    keys = [k.strip() for k in os.environ.get("GOOGLE_API_KEY", "").split(",") if k.strip()]
+    if not keys:
+        return await _original_agenerate(self, *args, **kwargs)
+        
+    last_exc = None
+    for _ in range(len(keys)):
+        try:
+            return await _original_agenerate(self, *args, **kwargs)
+        except Exception as e:
+            err_str = str(e).lower()
+            if "429" in err_str or "quota" in err_str or "exhausted" in err_str:
+                last_exc = e
+                # Identify current key
+                current_key = getattr(self, "google_api_key", "")
+                if hasattr(current_key, "get_secret_value"):
+                    current_key = current_key.get_secret_value()
+                
+                try:
+                    current_idx = keys.index(current_key)
+                except ValueError:
+                    current_idx = 0
+                    
+                next_idx = (current_idx + 1) % len(keys)
+                next_key = keys[next_idx]
+                
+                logger.warning("Gemini 429 Quota Exceeded. Rotating API key (idx %d -> %d)...", current_idx, next_idx)
+                
+                # Hot-swap the key by creating a fresh instance and transferring its __dict__ 
+                # (since pydantic v2 prevents direct mutation cleanly)
+                fresh_llm = ChatGoogleGenerativeAI(
+                    model=getattr(self, "model", "gemini-2.0-flash"),
+                    temperature=getattr(self, "temperature", 0.0),
+                    google_api_key=next_key
+                )
+                for attr, val in fresh_llm.__dict__.items():
+                    try:
+                        setattr(self, attr, val)
+                    except Exception:
+                        pass
+            else:
+                raise e
+    raise last_exc
+
+ChatGoogleGenerativeAI._agenerate = _patched_agenerate
+
+
 # ── App ──────────────────────────────────────────────────────────────────────────
 app = FastAPI(title="Scrayva Worker", lifespan=lifespan)
 
