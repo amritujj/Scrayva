@@ -385,16 +385,35 @@ async def run_agent(request: AgentRequest):
                 # Step 2: Create browser-use Browser (FRESH INSTANCE PER ATTEMPT)
                 from browser_use import Browser
                 from browser_use.browser.browser import BrowserConfig
+                # Memory-optimized Chromium args to stay under Render's 512MB limit.
+                _CHROMIUM_MEMORY_ARGS = [
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage",       # Use /tmp instead of /dev/shm
+                    "--disable-gpu",                  # GPU process uses extra RAM
+                    "--disable-extensions",
+                    "--disable-background-networking",
+                    "--disable-default-apps",
+                    "--disable-sync",
+                    "--disable-translate",
+                    "--disable-background-timer-throttling",
+                    "--disable-renderer-backgrounding",
+                    "--disable-device-discovery-notifications",
+                    "--disable-blink-features=AutomationControlled",
+                    "--no-first-run",
+                    "--mute-audio",
+                    "--hide-scrollbars",
+                    "--metrics-recording-only",
+                    "--safebrowsing-disable-auto-update",
+                    "--single-process",               # Biggest RAM saver: no separate renderer process
+                    "--js-flags=--max-old-space-size=256",  # Cap V8 heap at 256MB
+                    "--window-size=1280,720",
+                ]
                 browser_instance = Browser(
                     config=BrowserConfig(
                         headless=IS_HEADLESS,
                         disable_security=True,
-                        extra_chromium_args=[
-                            "--no-sandbox",
-                            "--disable-setuid-sandbox",
-                            "--disable-dev-shm-usage",
-                            "--disable-blink-features=AutomationControlled",
-                        ],
+                        extra_chromium_args=_CHROMIUM_MEMORY_ARGS,
                     )
                 )
                 logger.info("[task:%s] Step 2/5.1 — Custom local Browser explicitly instantiated", task_id)
@@ -815,7 +834,18 @@ async def debug_agent(request: DebugAgentRequest):
         try:
             from browser_use import Browser
             from browser_use.browser.browser import BrowserConfig
-            browser_instance = Browser(config=BrowserConfig(headless=IS_HEADLESS))
+            browser_instance = Browser(config=BrowserConfig(
+                headless=IS_HEADLESS,
+                disable_security=True,
+                extra_chromium_args=[
+                    "--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage",
+                    "--disable-gpu", "--disable-extensions", "--disable-background-networking",
+                    "--disable-default-apps", "--disable-sync", "--disable-translate",
+                    "--no-first-run", "--mute-audio", "--hide-scrollbars",
+                    "--single-process", "--js-flags=--max-old-space-size=256",
+                    "--window-size=1280,720",
+                ],
+            ))
             logger.info("[debug-agent:%s] Used direct Browser constructor explicitly.", task_id)
         except Exception as b_exc:
             logger.warning("[debug-agent:%s] Could not instantiate Browser explicitly: %s", task_id, b_exc)
