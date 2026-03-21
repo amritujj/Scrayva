@@ -45,23 +45,22 @@ export default async function handler(req, res) {
         
       if (insertError) throw insertError;
 
-      // 2. Trigger worker (non-blocking) — passes tier so worker can apply queue delay
-      // We don't await the full agent run here since it can take minutes.
-      // The worker will update the Supabase record when finished.
-      fetch(`${workerUrl}/run-agent`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: task.prompt,
-          task_id: task.id,
-          tier: tier,          // ← passed so worker applies correct queue delay
-          priority: priority   // ← for logging/debugging
-        })
-      }).catch(err => {
-        // We catch here so a worker fetch failure DOES NOT crash the API response.
-        // The task is already in Supabase as 'queued' and a 201 will be returned.
+      // 2. Trigger worker which now immediately returns 202 via BackgroundTasks.
+      // We await it so Vercel does not terminate the TCP connection prematurely.
+      try {
+        await fetch(`${workerUrl}/run-agent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: task.prompt,
+            task_id: task.id,
+            tier: tier,          // ← passed so worker applies correct queue delay
+            priority: priority   // ← for logging/debugging
+          })
+        });
+      } catch (err) {
         console.warn(`[API] Worker trigger failed, but task ${task.id} is queued in DB:`, err.message);
-      });
+      }
 
       return res.status(201).json(task);
     } else {

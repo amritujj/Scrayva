@@ -14,7 +14,7 @@ import logging
 import traceback
 import asyncio
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -381,32 +381,10 @@ TIER_CONFIG = {
 }
 
 
-# ── Main endpoint ─────────────────────────────────────────────────────────────────
-@app.post("/run-agent")
-async def run_agent(request: AgentRequest):
-    task_id = request.task_id
-    prompt = request.prompt.strip()
+# ── Global Task State ─────────────────────────────────────────────────────────────
+ACTIVE_TASKS: dict[str, asyncio.Task] = {}
 
-    logger.info(
-        "[task:%s] POST /run-agent received | tier=%s priority=%d prompt_len=%d",
-        task_id, request.tier, request.priority, len(prompt),
-    )
-
-    # Validate prompt is not empty
-    if not prompt:
-        return JSONResponse(status_code=422, content={"detail": "Prompt must not be empty."})
-
-    # Pre-flight: check all required env vars
-    logger.info("[task:%s] Step 0 — Running environment pre-flight checks", task_id)
-    missing = [v for v in REQUIRED_VARS if not os.environ.get(v)]
-    if missing:
-        detail = (
-            f"Missing required environment variables: {', '.join(missing)}. "
-            f"Add them to your .env file (local dev) or Render dashboard (production)."
-        )
-        logger.error("[task:%s] %s", task_id, detail)
-        return JSONResponse(status_code=500, content={"detail": detail})
-
+async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: int, queue_delay: int, max_steps: int):
     # Init Supabase
     logger.info("[task:%s] Step 0.5 — Initializing Supabase client", task_id)
     try:
@@ -414,22 +392,15 @@ async def run_agent(request: AgentRequest):
         logger.info("[task:%s] Supabase client initialised successfully", task_id)
     except ValueError as exc:
         logger.error("[task:%s] Supabase init failed: %s", task_id, exc)
-        return JSONResponse(status_code=500, content={"detail": str(exc)})
+        return
 
     # ── Tier-based queue delay ────────────────────────────────────────────────────
-    # Free tier tasks wait in queue to let Pro/Ultimate tasks skip ahead naturally.
-    tier = request.tier if request.tier in TIER_CONFIG else "Free"
-    cfg = TIER_CONFIG[tier]
-    queue_delay = cfg["queue_delay_s"]
-    max_steps   = cfg["max_steps"]
-
     if queue_delay > 0:
         logger.info(
             "[task:%s] ⏳ Tier=%s — applying %ds queue delay before execution starts. "
             "Pro/Ultimate tasks will be picked up ahead of this one during the wait.",
             task_id, tier, queue_delay,
         )
-        # Keep task in 'queued' state during the wait window
         await asyncio.sleep(queue_delay)
         logger.info("[task:%s] ⏰ Queue delay elapsed. Starting execution now.", task_id)
 
@@ -496,7 +467,6 @@ async def run_agent(request: AgentRequest):
                 logger.info("[task:%s] Step 2/5.1 — Custom local Browser explicitly instantiated", task_id)
                 
                 # Wrap the user prompt with explicit browser-use instructions.
-                # Without this, Gemini sometimes answers from memory without browsing.
                 wrapped_prompt = (
                     f"{prompt}\n\n"
                     "IMPORTANT INSTRUCTIONS:\n"
@@ -510,33 +480,27 @@ async def run_agent(request: AgentRequest):
                     task=wrapped_prompt,
                     llm=llm,
                     browser=browser_instance,
-                    max_failures=3,     # Allow up to 3 bad-format responses before giving up
-                    use_vision=False,   # Disable screenshot captures to save token usage
+                    max_failures=3,
+                    use_vision=False,
                 )
-                logger.info("[task:%s] Step 2/5 — Agent created (max_failures=3, use_vision=False)", task_id)
+                logger.info("[task:%s] Step 2/5 — Agent created", task_id)
 
-                # Hard step cap — tier-dependent
                 logger.info("[task:%s] Step 3/5 — agent.run() started (max_steps=%d, timeout=300s)", task_id, max_steps)
                 result = await asyncio.wait_for(agent.run(max_steps=max_steps), timeout=300.0)
                 
                 final_result_str = result.final_result()
                 
-                # Check if it silently failed before returning
                 if not final_result_str or final_result_str.strip() == "":
                     logger.warning("[task:%s] Attempt %d: final_result() is empty — trying multi-stage fallback.", task_id, attempt)
 
                     fallback_text = None
 
-                    # ── Unified Fallback for browser-use 0.1.28 ─────────────────────
                     try:
-                        # In 0.1.28 result is a list. In newer versions it's an object with .history
                         history_list = result if isinstance(result, list) else getattr(result, "history", [])
                         
                         if history_list:
-                            # Stage 1: Look for explicit action outputs or extracted_content
                             for step in reversed(history_list):
                                 if hasattr(step, "result") and step.result:
-                                    # result is a list of ActionResults
                                     for ar in reversed(step.result):
                                         if hasattr(ar, "extracted_content") and ar.extracted_content:
                                             fallback_text = str(ar.extracted_content).strip()
@@ -544,43 +508,35 @@ async def run_agent(request: AgentRequest):
                                         if hasattr(ar, "output") and ar.output and "error" not in str(ar.output).lower():
                                             fallback_text = str(ar.output).strip()
                                             break
-                                    if fallback_text:
-                                        logger.info("[task:%s] Fallback Stage 1: extracted from step.result", task_id)
-                                        break
+                                    if fallback_text: break
                                         
-                            # Stage 2: Look at model_output thought process
                             if not fallback_text:
                                 for step in reversed(history_list):
                                     if hasattr(step, "model_output") and step.model_output:
                                         candidate = getattr(step.model_output, "text", None) or getattr(step.model_output, "content", None)
                                         if candidate and str(candidate).strip():
                                             fallback_text = str(candidate).strip()
-                                            logger.info("[task:%s] Fallback Stage 2: extracted from model_output", task_id)
                                             break
 
-                            # Stage 3: Raw dump of the last step as a last resort
                             if not fallback_text:
                                 last_step = history_list[-1]
                                 dump_str = str(last_step.model_dump() if hasattr(last_step, "model_dump") else last_step)
                                 fallback_text = dump_str[:4000]
-                                logger.info("[task:%s] Fallback Stage 3: dumped step model (%d chars)", task_id, len(fallback_text))
 
                     except Exception as fallback_err:
                         logger.warning("[task:%s] Unified fallback failed: %s", task_id, fallback_err)
 
                     if fallback_text:
-                        # Treat as a soft success — save to Supabase as completed with a note
-                        logger.info("[task:%s] Fallback extraction succeeded. Marking task completed with note.", task_id)
+                        logger.info("[task:%s] Fallback extraction succeeded. Marking task completed.", task_id)
                         fallback_result = {
                             "note": "Agent returned empty final_result. Fallback text used.",
                             "fallback_text": fallback_text,
                         }
                         _set_task_status(supabase, task_id, "completed", fallback_result)
-                        return JSONResponse(status_code=200, content={"status": "completed", "task_id": task_id, "result": fallback_result})
+                        return
 
-                    # No fallback found either — treat as a genuine failure
                     if attempt < max_attempts:
-                        logger.info("[task:%s] No fallback text found. Retrying agent execution...", task_id)
+                        logger.info("[task:%s] No fallback text found. Retrying...", task_id)
                         continue
                     
                     urls = result.urls() if hasattr(result, "urls") else []
@@ -595,15 +551,14 @@ async def run_agent(request: AgentRequest):
                         "raw_result": "No fallback text found in last history step either.",
                         "current_url": urls[-1] if urls else None
                     }
-                    break  # exit loop — will be reported below as failure
+                    break
                 
-                # If we get here, we have non-empty result, so break the retry loop
                 logger.info("[task:%s] Step 3/5 — agent.run() finished successfully on attempt %d", task_id, attempt)
                 break
                 
             except asyncio.TimeoutError as exc:
                 if attempt < max_attempts:
-                    logger.warning("[task:%s] Attempt %d timed out after 5 mins. Retrying...", task_id, attempt)
+                    logger.warning("[task:%s] Attempt %d timed out. Retrying...", task_id, attempt)
                     continue
                 agent_failure_data = {
                     "error": "Agent execution timed out strictly after multiple attempts.",
@@ -614,7 +569,6 @@ async def run_agent(request: AgentRequest):
                 }
                 break
             except NotImplementedError as exc:
-                # Catches Windows signal handler crash if Monkey-Patch is overridden (e.g. by uvicorn's event loop)
                 agent_failure_data = {
                     "error": "Windows signal-handler incompatibility in browser-use",
                     "exception_type": type(exc).__name__,
@@ -625,8 +579,6 @@ async def run_agent(request: AgentRequest):
                 break
             except Exception as exc:
                 tb_str = traceback.format_exc()
-                
-                # Explicit check for bubus QueueShutDown
                 if "QueueShutDown" in tb_str or "bubus" in tb_str:
                     agent_failure_data = {
                         "error": "browser-use event bus shut down unexpectedly",
@@ -636,9 +588,6 @@ async def run_agent(request: AgentRequest):
                         "raw_result": "Crashed - Event bus QueueShutDown occurred during agent.run()"
                     }
                     break
-                
-                # browser-use often swallows and re-wraps NotImplementedError as a generic Exception. 
-                # This explicitly detects it by scanning the stack trace for the native failure string.
                 if "NotImplementedError" in tb_str or "add_signal_handler" in tb_str:
                     agent_failure_data = {
                         "error": "Windows signal-handler incompatibility in browser-use",
@@ -662,7 +611,6 @@ async def run_agent(request: AgentRequest):
                 }
                 break
             finally:
-                # Defensively, securely, natively teardown Browser Session specifically avoiding overlap
                 if browser_instance is not None:
                     try:
                         logger.info("[task:%s] Cleaning up browser execution instance natively.", task_id)
@@ -670,12 +618,10 @@ async def run_agent(request: AgentRequest):
                     except Exception as b_exc:
                         logger.warning("[task:%s] Could not cleanly close browser loop: %s", task_id, b_exc)
 
-        # If loop naturally triggered a terminal exception, raise to outter block immediately
         if agent_failure_data:
-            # We bypass the standard wrapper below and natively dump this structured error context
             logger.error("[task:%s] ✗ Final Agent failure diagnostics:\n%s", task_id, agent_failure_data)
             _set_task_status(supabase, task_id, "failed", agent_failure_data)
-            return JSONResponse(status_code=500, content={"detail": agent_failure_data})
+            return
 
         logger.info("[task:%s] Step 4/5 — Extracting final_result()", task_id)
         logger.info(
@@ -685,7 +631,6 @@ async def run_agent(request: AgentRequest):
             final_result_str or "<empty>"
         )
 
-        # Step 5: Parse result — gracefully handle plain text
         logger.info("[task:%s] Step 5/5 — Parsing result", task_id)
             
         try:
@@ -698,7 +643,6 @@ async def run_agent(request: AgentRequest):
                 task_id,
             )
 
-        # Enforce Native Error Trapping
         if "error" in result_json and len(result_json.keys()) == 1:
             err_msg = f"Agent completed but reported internal failure: {result_json['error']}"
             diagnostic_data = {
@@ -710,20 +654,16 @@ async def run_agent(request: AgentRequest):
             }
             logger.error("[task:%s] ✗ Agent returned error JSON:\n%s", task_id, diagnostic_data)
             _set_task_status(supabase, task_id, "failed", diagnostic_data)
-            return JSONResponse(status_code=500, content={"detail": diagnostic_data})
+            return
 
-        # Persist completed status
         _set_task_status(supabase, task_id, "completed", result_json)
         logger.info("[task:%s] ✓ Task completed successfully", task_id)
-
-        return JSONResponse(status_code=200, content={"status": "completed", "task_id": task_id, "result": result_json})
+        return
 
     except Exception as exc:
-        # Capture the full traceback and save it to Supabase so it appears in the dashboard
         full_tb = traceback.format_exc()
         error_msg = str(exc)
         
-        # Clearly bubble up the known browser-use timeout state
         if "on_BrowserStartEvent timed out" in error_msg:
             logger.error("[task:%s] ✗ Browser-Use internal startup timeout detected.", task_id)
             error_msg = f"Browser startup timeout: {error_msg}. Try the /test-playwright endpoint to verify core Chromium."
@@ -731,12 +671,68 @@ async def run_agent(request: AgentRequest):
         logger.error("[task:%s] ✗ Agent failed:\n%s", task_id, full_tb)
         _set_task_status(supabase, task_id, "failed", {
             "error": error_msg,
-            "traceback": full_tb,   # includes every frame so you can see exactly where it broke
+            "traceback": full_tb,
         })
-        return JSONResponse(
-            status_code=500,
-            content={"detail": f"Agent execution failed: {error_msg}"},
+        return
+
+@app.post("/run-agent")
+async def run_agent(request: AgentRequest):
+    task_id = request.task_id
+    prompt = request.prompt.strip()
+
+    logger.info(
+        "[task:%s] POST /run-agent received | tier=%s priority=%d prompt_len=%d",
+        task_id, request.tier, request.priority, len(prompt),
+    )
+
+    if not prompt:
+        return JSONResponse(status_code=422, content={"detail": "Prompt must not be empty."})
+
+    missing = [v for v in REQUIRED_VARS if not os.environ.get(v)]
+    if missing:
+        detail = (
+            f"Missing required environment variables: {', '.join(missing)}. "
+            f"Add them to your .env file (local dev) or Render dashboard (production)."
         )
+        logger.error("[task:%s] %s", task_id, detail)
+        return JSONResponse(status_code=500, content={"detail": detail})
+
+    tier = request.tier if request.tier in TIER_CONFIG else "Free"
+    cfg = TIER_CONFIG[tier]
+    queue_delay = cfg["queue_delay_s"]
+    max_steps   = cfg["max_steps"]
+
+    # Execute inside standard asyncio loop so we can hold a reference to cancel it
+    task = asyncio.create_task(_background_run_agent(task_id, prompt, tier, request.priority, queue_delay, max_steps))
+    ACTIVE_TASKS[task_id] = task
+    
+    # Automatically drop from active map when completed (either success, error, or cancelled)
+    task.add_done_callback(lambda t: ACTIVE_TASKS.pop(task_id, None))
+
+    logger.info("[task:%s] Task accepted and sent to background queue.", task_id)
+    return JSONResponse(status_code=202, content={"status": "queued", "task_id": task_id})
+
+@app.post("/cancel-agent/{task_id}")
+async def cancel_agent(task_id: str):
+    logger.info("[task:%s] Cancel request received.", task_id)
+    task = ACTIVE_TASKS.get(task_id)
+    
+    # Update Supabase anyway just in case it's queued but not picked up yet by this exact worker
+    try:
+        supabase = get_supabase_client()
+        _set_task_status(supabase, task_id, "failed", {"error": "Cancelled by user."})
+    except Exception as e:
+        logger.error("[task:%s] Failed to update supabase on cancel: %s", task_id, e)
+
+    if not task:
+        return JSONResponse(status_code=404, content={"detail": "Task marked as cancelled in DB, but no active native process found to abort."})
+    
+    # Send the native asyncio abort signal
+    task.cancel()
+    ACTIVE_TASKS.pop(task_id, None)
+        
+    logger.info("[task:%s] Native Python Task cancelled successfully.", task_id)
+    return JSONResponse(status_code=200, content={"status": "cancelled", "task_id": task_id})
 
 
 # ── Test endpoint (bypasses browser-use to verify the pipeline) ──────────────────

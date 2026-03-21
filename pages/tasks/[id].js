@@ -57,8 +57,16 @@ export default function TaskDetail() {
     return () => clearInterval(interval);
   }, [id]);
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
     if (!window.confirm('Cancel this task? All progress will be lost.')) return;
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers = session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {};
+      
+      await fetch(`/api/tasks/${id}`, { method: 'DELETE', headers });
+    } catch {}
+
     showToast('Task cancelled.', 'error');
     setTimeout(() => router.push('/dashboard'), 1000);
   };
@@ -81,6 +89,7 @@ export default function TaskDetail() {
 
   const handleRerun = () => {
     showToast('Task re-queued for a fresh run!', 'info');
+    setTimeout(() => router.push(`/dashboard?prompt=${encodeURIComponent(task.prompt)}`), 500);
   };
 
   const handleExport = (format) => {

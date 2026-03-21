@@ -14,17 +14,31 @@ export default async function handler(req, res) {
     const { data: { user } } = await supabase.auth.getUser(token);
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { data: task, error } = await supabase
-      .from('tasks')
-      .select('*')
-      .eq('id', id)
-      .eq('user_id', user.id)
-      .single();
+    if (req.method === 'DELETE') {
+      const workerUrl = process.env.WORKER_URL || 'http://localhost:8000';
+      try {
+        await fetch(`${workerUrl}/cancel-agent/${id}`, { method: 'POST' });
+      } catch (err) {
+        console.error(`Worker cancel ping failed for ${id}:`, err.message);
+      }
+      // Provide a fast local DB update just in case the worker map was lost
+      await supabase.from('tasks').update({ status: 'failed', error: 'Cancelled by user.' }).eq('id', id);
+      return res.status(200).json({ status: 'cancelled' });
+    }
+
+    if (req.method === 'GET') {
+      const { data: task, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .single();
+        
+      if (error) throw error;
+      if (!task) return res.status(404).json({ error: 'Task not found' });
       
-    if (error) throw error;
-    if (!task) return res.status(404).json({ error: 'Task not found' });
-    
-    res.status(200).json(task);
+      return res.status(200).json(task);
+    }
   } catch (error) {
     console.error(`Task Fetch Error [${id}]:`, error);
     res.status(500).json({ error: 'Failed to fetch task' });

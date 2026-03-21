@@ -10,13 +10,19 @@ function shouldRun(schedule, lastRunMs) {
   if (!schedule) return false;
   
   const now = Date.now();
-  if (!lastRunMs) {
-      if (schedule.toLowerCase().includes('every')) return true;
+  // Custom cron-like parsing
+  // "every minute" -> 60000 ms
+  const safeLastRunMs = lastRunMs || 0;
+  const diff = now - safeLastRunMs;
+  
+  const str = schedule.toLowerCase();
+
+  // If lastRunMs is 0 (never run before) and schedule contains 'every', it should run
+  if (safeLastRunMs === 0) {
+      if (str.includes('every')) return true;
       return false;
   }
   
-  const diff = now - lastRunMs;
-  const str = schedule.toLowerCase();
   
   const match = str.match(/every\s+(\d+)?\s*(minute|hour|day|week|month|year)s?/);
   if (!match) return false;
@@ -116,7 +122,13 @@ export default function Workflows() {
         if (w.id !== id) return w;
         const next = w.status === 'active' ? 'paused' : 'active';
         showToast(next === 'active' ? `"${w.title}" resumed.` : `"${w.title}" paused.`, next === 'active' ? 'success' : 'info');
-        return { ...w, status: next };
+        
+        const activatedNow = { ...w, status: next };
+        if (next === 'active' && shouldRun(activatedNow.schedule, activatedNow.lastRunMs)) {
+           if (handleRunNowRef.current) setTimeout(() => handleRunNowRef.current(activatedNow), 100);
+        }
+        
+        return activatedNow;
       });
       if (user) localStorage.setItem(`scrayva_workflows_${user.id}`, JSON.stringify(updated));
       return updated;

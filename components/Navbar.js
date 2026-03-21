@@ -33,7 +33,7 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass-effect border-b border-white/5 bg-[#0b0f1a]/80 backdrop-blur-md overflow-x-hidden">
+    <nav className="fixed top-0 left-0 right-0 z-50 glass-effect border-b border-white/5 bg-[#0b0f1a]/80 backdrop-blur-md">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16 sm:h-20">
         
         <div className="min-w-0 shrink-0">
