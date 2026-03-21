@@ -1,11 +1,39 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Toast, { useToast } from '../components/Toast';
 import { supabase } from '../lib/supabase';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
 import useScrollReveal from '../hooks/useScrollReveal';
+
+function shouldRun(schedule, lastRunMs) {
+  if (!schedule) return false;
+  
+  const now = Date.now();
+  if (!lastRunMs) {
+      if (schedule.toLowerCase().includes('every')) return true;
+      return false;
+  }
+  
+  const diff = now - lastRunMs;
+  const str = schedule.toLowerCase();
+  
+  const match = str.match(/every\s+(\d+)?\s*(minute|hour|day|week|month|year)s?/);
+  if (!match) return false;
+  
+  const amount = parseInt(match[1]) || 1;
+  const unit = match[2];
+  
+  let ms = 0;
+  if (unit === 'minute') ms = amount * 60 * 1000;
+  if (unit === 'hour') ms = amount * 60 * 60 * 1000;
+  if (unit === 'day') ms = amount * 24 * 60 * 60 * 1000;
+  if (unit === 'week') ms = amount * 7 * 24 * 60 * 60 * 1000;
+  if (unit === 'month') ms = amount * 30 * 24 * 60 * 60 * 1000;
+  if (unit === 'year') ms = amount * 365 * 24 * 60 * 60 * 1000;
+  
+  return ms > 0 && diff >= ms;
+}
 
 const INIT_WORKFLOWS = [
   { id: 'price-monitor',  title: 'E-commerce Price Monitor',    desc: 'Extracts competitor pricing daily from top 5 retail sites.', status: 'active',  lastRun: '2 hours ago', schedule: 'Daily',   destination: 'Google Sheets' },
@@ -22,6 +50,22 @@ export default function Workflows() {
   const { toast, showToast } = useToast();
   const router = useRouter();
   useScrollReveal();
+
+  const workflowsRef = useRef(workflows);
+  useEffect(() => { workflowsRef.current = workflows; }, [workflows]);
+
+  const handleRunNowRef = useRef();
+
+  useEffect(() => {
+    const tick = setInterval(() => {
+      workflowsRef.current.forEach(wf => {
+        if (wf.status === 'active' && shouldRun(wf.schedule, wf.lastRunMs)) {
+           if (handleRunNowRef.current) handleRunNowRef.current(wf);
+        }
+      });
+    }, 15000);
+    return () => clearInterval(tick);
+  }, []);
 
   const fetchTasks = async () => {
     try {
@@ -114,8 +158,8 @@ export default function Workflows() {
         setCredits(prev => Math.max(0, (prev || 0) - 1));
         
         const queueMsg = tier === 'Free'
-          ? 'Task queued! Your task will start in ~60s.'
-          : 'Task queued! Starting immediately...';
+          ? `Task queued for workflow! Your task will start in ~60s.`
+          : `Task queued for workflow! Starting immediately...`;
         showToast(queueMsg, 'success');
 
         setWorkflows((prev) => {
@@ -124,7 +168,8 @@ export default function Workflows() {
               return { 
                 ...item, 
                 lastRunId: task.id, 
-                lastRun: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                lastRun: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                lastRunMs: Date.now()
               };
             }
             return item;
@@ -142,6 +187,10 @@ export default function Workflows() {
       showToast('Network error while saving task.', 'error');
     }
   };
+
+  useEffect(() => {
+    handleRunNowRef.current = handleRunNow;
+  });
 
   return (
     <div className="min-h-screen flex bg-slate-950 text-slate-200 font-sans antialiased">

@@ -46,6 +46,7 @@ export default function WorkflowBuilder() {
       prompt: prompt,
       status: 'active',
       lastRun: 'Never',
+      lastRunMs: 0,
       schedule: schedule,
       destination: destination
     };
