@@ -108,15 +108,15 @@ export default function Pricing() {
 
       <Navbar />
 
-      <main className="pt-32 pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="pt-24 md:pt-32 pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center mb-16 max-w-3xl mx-auto">
+        <div className="text-center mb-10 md:mb-16 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-brand-accent text-xs font-semibold uppercase tracking-wider mb-6">
             <span className="flex h-2 w-2 rounded-full bg-brand-primary animate-pulse" />
             Simple Pricing
           </div>
-          <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-6 tracking-tight leading-[1.1]">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight leading-[1.1]">
             Scale your <span className="gradient-text">research</span> without scaling costs.
           </h1>
           <p className="text-xl text-slate-400">
@@ -145,7 +145,7 @@ export default function Pricing() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
           {plans.map((plan) => (
             <div key={plan.name}
               className={`p-8 rounded-3xl flex flex-col ${plan.popular ? 'bg-brand-primary/5 border-2 border-brand-primary relative lg:scale-105 shadow-2xl shadow-brand-primary/10 z-10' : 'bg-slate-800/10 border border-white/5'}`}>

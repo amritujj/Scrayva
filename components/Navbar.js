@@ -33,10 +33,12 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass-effect border-b border-white/5 bg-[#0b0f1a]/80 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
+    <nav className="fixed top-0 left-0 right-0 z-50 glass-effect border-b border-white/5 bg-[#0b0f1a]/80 backdrop-blur-md overflow-x-hidden">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16 sm:h-20">
         
-        <Logo />
+        <div className="min-w-0 shrink-0">
+          <Logo textSize="text-xl sm:text-2xl" />
+        </div>
 
         {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-8 text-sm">
@@ -82,10 +84,10 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Menu Button */}
-        <div className="md:hidden flex items-center">
+        <div className="md:hidden flex items-center shrink-0">
           <button 
             onClick={() => setIsMenuOpen(!isMenuOpen)} 
-            className="text-slate-300 hover:text-white p-2"
+            className="text-slate-300 hover:text-white p-2 touch-target flex items-center justify-center rounded-lg hover:bg-white/5 active:bg-white/10 transition-colors"
             aria-label="Toggle menu"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -101,7 +103,7 @@ export default function Navbar() {
 
       {/* Mobile Menu Dropdown */}
       {isMenuOpen && (
-        <div className="md:hidden bg-[#0b0f1a] border-b border-white/5 shadow-2xl absolute top-20 left-0 right-0 py-4 px-4 flex flex-col gap-4">
+        <div className="md:hidden bg-[#0b0f1a] border-b border-white/5 shadow-2xl absolute top-16 sm:top-20 left-0 right-0 py-4 px-4 flex flex-col gap-4">
           {navLinks.map((link) => (
             <Link 
               key={link.href} 

@@ -41,7 +41,7 @@ export default function Landing() {
 
 
       {/* ── Hero ── */}
-      <section className="relative pt-40 pb-20 overflow-hidden">
+      <section className="relative pt-24 sm:pt-40 pb-20 overflow-hidden">
         <div className="hero-glow" style={{ top: '5rem', left: '25%' }} />
         <div className="hero-glow" style={{ bottom: 0, right: '25%' }} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
@@ -53,13 +53,13 @@ export default function Landing() {
           </div>
 
           <h1 data-reveal data-delay="150"
-            className="text-5xl md:text-7xl font-extrabold text-white mb-6 tracking-tight leading-[1.1]">
+            className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-white mb-6 tracking-tight leading-[1.1]">
             Forget Brittle Scrapers.<br />
             <span className="gradient-text">Hire Autonomous AI.</span>
           </h1>
 
           <p data-reveal data-delay="300"
-            className="max-w-2xl mx-auto text-lg md:text-xl text-slate-400 mb-10 leading-relaxed">
+            className="max-w-2xl mx-auto text-base md:text-xl text-slate-400 mb-10 leading-relaxed">
             Scrayva doesn't just scrape—it understands. Our AI agents execute complex web tasks, bypass captchas, and deliver clean structured data instantly. Better than Apify. Faster than PhantomBuster.
           </p>
 
@@ -80,7 +80,7 @@ export default function Landing() {
           <div data-reveal="scale" data-delay="200"
             className="mt-20 relative mx-auto max-w-5xl">
             <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-2 shadow-2xl overflow-hidden shadow-brand-primary/10">
-              <div className="w-full h-auto bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl overflow-hidden relative group cursor-pointer aspect-video flex items-center justify-center">
+              <div className="w-full h-auto bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl overflow-hidden relative group cursor-pointer aspect-video flex items-center justify-center" style={{minHeight: '180px'}}>
                 {/* Mockup Image */}
                 <img src="/images/dashboard_mockup.png" alt="Scrayva Dashboard" className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
                 
@@ -111,12 +111,12 @@ export default function Landing() {
       <section className="py-12 border-t border-b border-white/5 bg-slate-950">
         <div className="max-w-7xl mx-auto px-4 overflow-hidden">
           <p className="text-center text-sm font-semibold text-slate-500 uppercase tracking-widest mb-8">Trusted by innovative teams worldwide</p>
-          <div className="flex gap-12 md:gap-24 justify-center items-center opacity-40 grayscale flex-wrap">
-            <h3 className="text-2xl font-bold font-sans">Acme Corp</h3>
-            <h3 className="text-2xl font-black tracking-tighter">TechFlow</h3>
-            <h3 className="text-2xl font-serif italic">NovaData</h3>
-            <h3 className="text-2xl font-mono">Synthetix</h3>
-            <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-200">GrowthGen</h3>
+          <div className="flex gap-6 sm:gap-12 md:gap-24 justify-center items-center opacity-40 grayscale flex-wrap">
+            <h3 className="text-lg sm:text-2xl font-bold font-sans">Acme Corp</h3>
+            <h3 className="text-lg sm:text-2xl font-black tracking-tighter">TechFlow</h3>
+            <h3 className="text-lg sm:text-2xl font-serif italic">NovaData</h3>
+            <h3 className="text-lg sm:text-2xl font-mono">Synthetix</h3>
+            <h3 className="text-lg sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-200">GrowthGen</h3>
           </div>
         </div>
       </section>
@@ -229,7 +229,7 @@ export default function Landing() {
               <div className="relative">
                 <div className="absolute inset-0 bg-brand-primary/20 blur-3xl rounded-full" />
                 <div className="relative glass-effect p-6 rounded-3xl border border-white/10">
-                  <div className="bg-black/50 rounded-xl p-4 font-mono text-xs text-green-400 mb-4 h-64 overflow-hidden">
+                  <div className="bg-black/50 rounded-xl p-4 font-mono text-xs text-green-400 mb-4 h-44 sm:h-64 overflow-hidden">
                     <p className="mb-2 uppercase text-slate-500 font-bold tracking-widest text-[10px]">Processing Pipeline...</p>
                     <p className="mb-1">&gt; Initializing browser session...</p>
                     <p className="mb-1">&gt; Navigating to linkedin.com/search</p>
@@ -416,7 +416,7 @@ export default function Landing() {
       <section className="py-24 bg-gradient-to-b from-[#0b0f1a] to-[#1a1333]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div data-reveal="scale"
-            className="relative p-10 md:p-16 rounded-[3rem] overflow-hidden bg-slate-900 border border-brand-primary/20">
+            className="relative p-6 sm:p-10 md:p-16 rounded-[2rem] sm:rounded-[3rem] overflow-hidden bg-slate-900 border border-brand-primary/20">
             <div className="absolute top-0 right-0 p-8 opacity-20">
               <svg className="w-64 h-64 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" />
@@ -424,7 +424,7 @@ export default function Landing() {
             </div>
             <div className="relative z-10 max-w-2xl">
               <span data-reveal="left" className="text-brand-accent text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Coming Soon</span>
-              <h2 data-reveal="left" data-delay="150" className="text-4xl md:text-5xl font-extrabold text-white mb-6">AI Voice Receptionist</h2>
+              <h2 data-reveal="left" data-delay="150" className="text-3xl md:text-5xl font-extrabold text-white mb-6">AI Voice Receptionist</h2>
               <p data-reveal="left" data-delay="300" className="text-slate-400 text-lg mb-8 leading-relaxed">
                 What if your web agent could also talk? Scrayva Voice will soon handle inbound calls, answer FAQs based on your website data, and book meetings directly into your calendar.
               </p>
@@ -454,7 +454,7 @@ export default function Landing() {
       {/* ── Footer ── */}
       <footer className="bg-slate-950 pt-20 pb-10 border-t border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-12 mb-16">
             <div data-reveal="left" className="col-span-2">
               <div className="flex items-center gap-2 mb-6">
                 <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center">

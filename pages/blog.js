@@ -26,16 +26,16 @@ export default function Blog() {
 
 
       {/* Hero Header */}
-      <header className="relative pt-44 pb-32 overflow-hidden">
+      <header className="relative pt-28 sm:pt-44 pb-20 sm:pb-32 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary-dim/20 via-surface to-background -z-10"></div>
         <div className="absolute top-0 right-0 w-[800px] h-[600px] bg-primary/10 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/3"></div>
-        <div className="max-w-7xl mx-auto px-6 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
           <div className="max-w-3xl">
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-surface-container-highest/50 border border-outline-variant/20 mb-6">
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
               <span className="text-xs font-label uppercase tracking-widest text-primary-fixed-dim">Latest Updates</span>
             </div>
-            <h1 className="text-6xl md:text-8xl font-headline font-extrabold tracking-tighter text-on-surface leading-[0.9] mb-8">
+            <h1 className="text-4xl sm:text-6xl md:text-8xl font-headline font-extrabold tracking-tighter text-on-surface leading-[0.9] mb-8">
               Scrayva Blog — <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">AI Automation Insights</span>
             </h1>
             <p className="text-xl text-on-surface-variant font-body max-w-2xl mb-12 leading-relaxed">
@@ -64,7 +64,7 @@ export default function Blog() {
       </header>
 
       {/* Category Scroll */}
-      <section className="max-w-7xl mx-auto px-6 mb-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-12 sm:mb-20">
         <div className="flex items-center space-x-4 overflow-x-auto no-scrollbar pb-4">
           <button className="whitespace-nowrap px-6 py-2.5 rounded-full bg-primary text-on-primary font-semibold text-sm">All Topics</button>
           <button className="whitespace-nowrap px-6 py-2.5 rounded-full bg-surface-container-low border border-outline-variant/10 text-on-surface-variant hover:text-primary transition-colors font-medium text-sm">Web Automation</button>
@@ -77,9 +77,9 @@ export default function Blog() {
       </section>
 
       {/* Featured Post */}
-      <section className="max-w-7xl mx-auto px-6 mb-32">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-20 sm:mb-32">
         <div className="group relative grid grid-cols-1 lg:grid-cols-12 gap-0 rounded-2xl overflow-hidden bg-surface-container-low border border-primary/20 shadow-2xl shadow-primary/5">
-          <div className="lg:col-span-7 overflow-hidden h-full min-h-[400px]">
+          <div className="lg:col-span-7 overflow-hidden h-full" style={{minHeight: '250px'}}>
             <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Advanced dashboard showing automation workflows and data analytics" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB23M73Oi_aduMYjvtSuOQM68k-8iLONaGxEfxi0_GPmKPQoNOFtuOQKIA5-1Ybny1T0Tlrhj1ifkwrIKfj2IR_JK14OilQcB52gjuRzg78w1Y8lrH-NTEw52f9ifjblVNSAJyW_UflbL7W8V-VV-FHEqfn2t5ykJ-peEkeaYJOaT1ramMSa3ToyBpL7Yt8RiJfzQ1JwQetf1RQUxm9IKMRzwz8tty1XOxcy91w-wLWyUwp0wG_3EYfSwFPa1oezPZm_qb91A2mYug" alt="Dashboard" />
           </div>
           <div className="lg:col-span-5 p-8 lg:p-12 flex flex-col justify-center">
@@ -110,7 +110,7 @@ export default function Blog() {
       </section>
 
       {/* Recent Posts Grid */}
-      <section className="max-w-7xl mx-auto px-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-end justify-between mb-12">
           <div>
             <h3 className="text-sm font-label uppercase tracking-widest text-primary mb-4">The Feed</h3>
@@ -246,8 +246,8 @@ export default function Blog() {
       </section>
 
       {/* Footer CTA */}
-      <section className="max-w-7xl mx-auto px-6 mt-40">
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-surface-container-high to-surface-container-lowest border border-white/5 p-8 md:p-16">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 mt-20 sm:mt-40">
+        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-surface-container-high to-surface-container-lowest border border-white/5 p-6 sm:p-8 md:p-16">
           <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 blur-[100px] -z-10"></div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -257,7 +257,7 @@ export default function Blog() {
               <p className="text-xl text-on-surface-variant mb-8">
                 Experience the power of Scrayva without spending a dime. Set up your first workflow in under 2 minutes.
               </p>
-              <div className="flex flex-wrap gap-12 items-center">
+              <div className="flex flex-wrap gap-4 sm:gap-12 items-center">
                 <Link href="/signup" className="px-10 py-5 bg-gradient-to-r from-primary-dim to-secondary-dim text-on-primary font-bold rounded-xl shadow-2xl shadow-primary/30 active:scale-95 transition-all">
                   Start Building Now
                 </Link>

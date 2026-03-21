@@ -37,24 +37,24 @@ export default function About() {
       <Navbar />
 
 
-      <main className="pt-32 pb-24">
+      <main className="pt-24 md:pt-32 pb-24">
         {/* Hero */}
-        <section className="max-w-4xl mx-auto px-6 text-center mb-24">
+        <section className="max-w-4xl mx-auto px-4 sm:px-6 text-center mb-16 md:mb-24">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-brand-accent text-xs font-semibold uppercase tracking-wider mb-6">
             🇮🇳 Proudly built in India
           </div>
-          <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-6 leading-tight">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold text-white mb-6 leading-tight">
             We believe automation<br />
             <span className="gradient-text">should be for everyone.</span>
           </h1>
-          <p className="text-xl text-slate-400 leading-relaxed max-w-2xl mx-auto">
+          <p className="text-base md:text-xl text-slate-400 leading-relaxed max-w-2xl mx-auto">
             We make AI web automation accessible to every entrepreneur, student, and small team—turning browser tasks into business results.
           </p>
         </section>
 
         {/* Story */}
-        <section className="max-w-3xl mx-auto px-6 mb-24">
-          <div className="bg-slate-800/30 border border-white/5 rounded-3xl p-10">
+        <section className="max-w-3xl mx-auto px-4 sm:px-6 mb-16 md:mb-24">
+          <div className="bg-slate-800/30 border border-white/5 rounded-3xl p-6 sm:p-10">
             <h2 className="text-2xl font-bold text-white mb-6">Our story</h2>
             <div className="space-y-4 text-slate-400 leading-relaxed">
               <p>
@@ -71,7 +71,7 @@ export default function About() {
         </section>
 
         {/* Values */}
-        <section className="max-w-5xl mx-auto px-6 mb-24">
+        <section className="max-w-5xl mx-auto px-4 sm:px-6 mb-16 md:mb-24">
           <h2 className="text-3xl font-bold text-white text-center mb-12">What we stand for</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {VALUES.map((v) => (
@@ -85,9 +85,9 @@ export default function About() {
         </section>
 
         {/* Founder card */}
-        <section className="max-w-3xl mx-auto px-6 mb-24">
+        <section className="max-w-3xl mx-auto px-4 sm:px-6 mb-16 md:mb-24">
           <h2 className="text-3xl font-bold text-white text-center mb-10">The team</h2>
-          <div className="flex flex-col sm:flex-row items-center gap-8 p-10 bg-slate-800/30 border border-white/5 rounded-3xl">
+          <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8 p-6 sm:p-10 bg-slate-800/30 border border-white/5 rounded-3xl text-center sm:text-left">
             <div className="w-24 h-24 flex-shrink-0 rounded-2xl bg-gradient-to-br from-brand-primary to-brand-secondary overflow-hidden flex items-center justify-center text-white shadow-xl shadow-brand-primary/20">
                <img src="/images/amrit_founder.png" alt="Amrit - Founder of Scrayva" className="w-full h-full object-cover" />
             </div>
@@ -102,7 +102,7 @@ export default function About() {
         </section>
 
         {/* CTA */}
-        <section className="max-w-2xl mx-auto px-6 text-center">
+        <section className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Ready to give it a try?</h2>
           <p className="text-slate-400 mb-8">Start automating your first web task today—no credit card required for the free tier.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
