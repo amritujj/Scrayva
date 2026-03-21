@@ -13,7 +13,7 @@ export default function WorkflowBuilder() {
   const [workflowName, setWorkflowName] = useState('');
   const [workflowDesc, setWorkflowDesc] = useState('');
   const [prompt, setPrompt] = useState('');
-  const [schedule, setSchedule] = useState('Manual Only');
+  const [schedule, setSchedule] = useState('');
   const [destination, setDestination] = useState('Email Digest');
 
   const { toast, showToast } = useToast();
@@ -33,17 +33,33 @@ export default function WorkflowBuilder() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!workflowName.trim() || !prompt.trim()) {
-      showToast('Please provide a name and a prompt.', 'error');
+    if (!workflowName.trim() || !prompt.trim() || !schedule.trim()) {
+      showToast('Please provide a name, prompt, and schedule.', 'error');
       return;
     }
     setIsSubmitting(true);
-    // Simulate API call for saving a workflow
+
+    const newWorkflow = {
+      id: `wf-${Date.now()}`,
+      title: workflowName,
+      desc: workflowDesc || 'Custom workflow',
+      prompt: prompt,
+      status: 'active',
+      lastRun: 'Never',
+      schedule: schedule,
+      destination: destination
+    };
+
+    const storageKey = user ? `scrayva_workflows_${user.id}` : 'scrayva_workflows_guest';
+    const existing = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    existing.push(newWorkflow);
+    localStorage.setItem(storageKey, JSON.stringify(existing));
+
     setTimeout(() => {
       setIsSubmitting(false);
       showToast('Workflow created successfully!', 'success');
       setTimeout(() => router.push('/workflows'), 1000);
-    }, 1000);
+    }, 500);
   };
 
   return (
@@ -145,17 +161,14 @@ export default function WorkflowBuilder() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-bold text-slate-300 uppercase tracking-wider mb-2">Schedule</label>
-                  <select
+                  <input
+                    type="text"
                     value={schedule}
                     onChange={(e) => setSchedule(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer appearance-none transition"
-                  >
-                    <option>Manual Only</option>
-                    <option>Hourly</option>
-                    <option>Daily</option>
-                    <option>Weekly</option>
-                    <option>Monthly</option>
-                  </select>
+                    placeholder="e.g. Every minute, Every day at 9 AM, Every year..."
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                  />
+                  <p className="text-xs text-slate-500 mt-2">Complete freedom: Type exactly when you want this to run.</p>
                 </div>
                 
                 <div>

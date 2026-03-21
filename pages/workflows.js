@@ -26,6 +26,9 @@ export default function Workflows() {
       if (user) {
         setUser(user);
         setTier(user.user_metadata?.tier || 'Free');
+        const storageKey = `scrayva_workflows_${user.id}`;
+        const savedWorkflows = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        setWorkflows(savedWorkflows);
       } else {
         router.push('/login');
       }
@@ -33,19 +36,24 @@ export default function Workflows() {
   }, []);
 
   const toggleStatus = (id) => {
-    setWorkflows((prev) =>
-      prev.map((w) => {
+    setWorkflows((prev) => {
+      const updated = prev.map((w) => {
         if (w.id !== id) return w;
         const next = w.status === 'active' ? 'paused' : 'active';
         showToast(next === 'active' ? `"${w.title}" resumed.` : `"${w.title}" paused.`, next === 'active' ? 'success' : 'info');
         return { ...w, status: next };
-      })
-    );
+      });
+      if (user) localStorage.setItem(`scrayva_workflows_${user.id}`, JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const handleScheduleChange = (id, value) => {
-    setWorkflows((prev) => prev.map((w) => w.id === id ? { ...w, schedule: value } : w));
-    showToast('Schedule updated!', 'success');
+    setWorkflows((prev) => {
+      const updated = prev.map((w) => w.id === id ? { ...w, schedule: value } : w);
+      if (user) localStorage.setItem(`scrayva_workflows_${user.id}`, JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const handleNewWorkflow = () => {
@@ -150,15 +158,13 @@ export default function Workflows() {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full xl:w-auto border-t xl:border-t-0 xl:border-l border-slate-800/50 pt-6 xl:pt-0 xl:pl-6">
                   <div className="space-y-2 min-w-[140px]">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Schedule</label>
-                    <select
+                    <input
+                      type="text"
                       value={wf.schedule}
                       onChange={(e) => handleScheduleChange(wf.id, e.target.value)}
-                      className="bg-slate-800 border-0 text-sm text-slate-200 rounded-lg w-full py-2 px-3 cursor-pointer focus:ring-1 focus:ring-indigo-500">
-                      <option>Daily</option>
-                      <option>Weekly</option>
-                      <option>Monthly</option>
-                      <option>Manual Only</option>
-                    </select>
+                      placeholder="e.g. Every day at 5 AM"
+                      className="bg-slate-800 border-0 text-sm text-slate-200 rounded-lg w-full py-2 px-3 focus:ring-1 focus:ring-indigo-500"
+                    />
                   </div>
                   <div className="space-y-2 min-w-[160px]">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Destination</label>
