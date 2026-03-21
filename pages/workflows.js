@@ -17,22 +17,53 @@ export default function Workflows() {
   const [workflows, setWorkflows] = useState([]);
   const [user, setUser] = useState(null);
   const [tier, setTier] = useState('Free');
+  const [credits, setCredits] = useState(null);
+  const [taskStatuses, setTaskStatuses] = useState({});
   const { toast, showToast } = useToast();
   const router = useRouter();
   useScrollReveal();
 
+  const fetchTasks = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers = session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {};
+      const res = await fetch('/api/tasks', { headers });
+      if (res.ok) {
+        const data = await res.json();
+        const statuses = {};
+        data.forEach(t => { statuses[t.id] = t.status; });
+        setTaskStatuses(statuses);
+      }
+    } catch (err) {
+      console.error("Failed to fetch tasks:", err);
+    }
+  };
+
   useEffect(() => {
+    let interval;
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setUser(user);
-        setTier(user.user_metadata?.tier || 'Free');
+        const userTier = user.user_metadata?.tier || 'Free';
+        setTier(userTier);
+        
+        let initialCredits = 5;
+        if (userTier === 'Pro') initialCredits = 60;
+        if (userTier === 'Ultimate') initialCredits = 200;
+        setCredits(user.user_metadata?.credits ?? initialCredits);
+
         const storageKey = `scrayva_workflows_${user.id}`;
         const savedWorkflows = JSON.parse(localStorage.getItem(storageKey) || '[]');
         setWorkflows(savedWorkflows);
+
+        fetchTasks();
+        interval = setInterval(fetchTasks, 3000);
       } else {
         router.push('/login');
       }
     });
+
+    return () => { if (interval) clearInterval(interval); };
   }, []);
 
   const toggleStatus = (id) => {
@@ -60,8 +91,56 @@ export default function Workflows() {
     router.push('/builder');
   };
 
-  const handleRunNow = (w) => {
-    showToast(`"${w.title}" queued for immediate run.`, 'success');
+  const handleRunNow = async (w) => {
+    if (tier === 'None') {
+      showToast('Redirecting to choose a plan...', 'info');
+      router.push('/pricing');
+      return;
+    }
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers = { 'Content-Type': 'application/json' };
+      if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
+
+      const res = await fetch('/api/tasks', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ prompt: w.prompt || w.desc }),
+      });
+      
+      if (res.ok) {
+        const task = await res.json();
+        setCredits(prev => Math.max(0, (prev || 0) - 1));
+        
+        const queueMsg = tier === 'Free'
+          ? 'Task queued! Your task will start in ~60s.'
+          : 'Task queued! Starting immediately...';
+        showToast(queueMsg, 'success');
+
+        setWorkflows((prev) => {
+          const updated = prev.map((item) => {
+            if (item.id === w.id) {
+              return { 
+                ...item, 
+                lastRunId: task.id, 
+                lastRun: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+              };
+            }
+            return item;
+          });
+          if (user) localStorage.setItem(`scrayva_workflows_${user.id}`, JSON.stringify(updated));
+          return updated;
+        });
+
+        setTaskStatuses(prev => ({...prev, [task.id]: 'queued'}));
+      } else {
+        const err = await res.json();
+        showToast(`Error: ${err.error || 'Failed to submit task'}`, 'error');
+      }
+    } catch (e) {
+      showToast('Network error while saving task.', 'error');
+    }
   };
 
   return (
@@ -92,7 +171,13 @@ export default function Workflows() {
             </Link>
           ))}
         </nav>
-        <div className="p-4 border-t border-slate-800">
+        <div className="p-4 border-t border-slate-800 space-y-4">
+          <div className="bg-slate-950/50 rounded-xl p-3">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Compute</span>
+              <span className="text-xs font-bold text-white">{credits !== null ? credits : '-'} Credits</span>
+            </div>
+          </div>
           <div className="flex items-center gap-3 p-2 bg-slate-950/50 rounded-xl">
             <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold">
               {user?.email?.[0]?.toUpperCase() || 'U'}
@@ -145,11 +230,26 @@ export default function Workflows() {
                       {wf.status === 'active' ? 'Active' : 'Paused'}
                     </span>
                   </div>
-                  <p className="text-slate-400 text-sm line-clamp-1 mb-4">{wf.desc}</p>
-                  <div className="flex flex-wrap gap-3 text-xs">
+                  <p className="text-slate-400 text-sm line-clamp-1 mb-4">{wf.prompt || wf.desc}</p>
+                  <div className="flex flex-wrap gap-3 text-xs items-center">
                     <span className="bg-slate-900/50 px-3 py-1.5 rounded-full text-slate-500">Last run: {wf.lastRun}</span>
+                    {wf.lastRunId && taskStatuses[wf.lastRunId] && (
+                      <span className={`px-2 py-1 font-bold rounded uppercase tracking-wider ${
+                        taskStatuses[wf.lastRunId].toLowerCase() === 'completed' ? 'bg-green-500/10 text-green-400' :
+                        taskStatuses[wf.lastRunId].toLowerCase() === 'failed' ? 'bg-red-500/10 text-red-400' :
+                        'bg-sky-500/10 text-sky-400 animate-pulse flex items-center gap-1'
+                      }`}>
+                        {['queued', 'running'].includes(taskStatuses[wf.lastRunId].toLowerCase()) && <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>}
+                        {taskStatuses[wf.lastRunId]}
+                      </span>
+                    )}
+                    {wf.lastRunId && (
+                      <Link href={`/tasks/${wf.lastRunId}`} className="text-indigo-400 hover:text-indigo-300 transition-colors font-semibold">
+                        View Results &rarr;
+                      </Link>
+                    )}
                     <button onClick={() => handleRunNow(wf)}
-                      className="bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1.5 rounded-full text-indigo-400 border border-indigo-500/20 transition-colors font-semibold">
+                      className="bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1.5 rounded-full text-indigo-400 border border-indigo-500/20 transition-colors font-semibold ml-auto xl:ml-0">
                       ▶ Run Now
                     </button>
                   </div>
