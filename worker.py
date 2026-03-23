@@ -14,7 +14,7 @@ import logging
 import traceback
 import asyncio
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Request, BackgroundTasks, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -68,6 +68,7 @@ REQUIRED_VARS: dict[str, str] = {
     "GEMINI_API_KEY": "Google Gemini API access",
     "SUPABASE_URL": "Supabase project URL",
     "SUPABASE_SERVICE_ROLE_KEY": "Supabase service-role key",
+    "SARVAM_API_KEY": "Sarvam AI access for Voice features",
 }
 
 IS_HEADLESS = os.environ.get("HEADLESS", "true").lower() == "true"
