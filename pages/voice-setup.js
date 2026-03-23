@@ -25,7 +25,7 @@ export default function VoiceSetup() {
   const { toast, showToast } = useToast();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (user) {
         setUser(user);
         // Pre-fill if agent exists
