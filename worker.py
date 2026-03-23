@@ -65,7 +65,7 @@ if sys.platform == "win32":
 
 # ── Startup env-var validation ───────────────────────────────────────────────────
 REQUIRED_VARS: dict[str, str] = {
-    "GOOGLE_API_KEY": "Gemini LLM access",
+    "GEMINI_API_KEY": "Google Gemini API access",
     "SUPABASE_URL": "Supabase project URL",
     "SUPABASE_SERVICE_ROLE_KEY": "Supabase service-role key",
 }
@@ -252,63 +252,6 @@ async def lifespan(app: FastAPI):
     # Optional shutdown logic goes here
 
 
-# ── Monkey-patch ChatGoogleGenerativeAI for Multi-Key Rotation ───────────────────
-# This ensures that if browser-use hits a 429 (Quota Exceeded) mid-task, we can 
-# seamlessly swap in a new API key without failing the entire task.
-from langchain_google_genai import ChatGoogleGenerativeAI
-_original_agenerate = ChatGoogleGenerativeAI._agenerate
-
-async def _patched_agenerate(self, *args, **kwargs):
-    import os
-    keys = [k.strip() for k in os.environ.get("GOOGLE_API_KEY", "").split(",") if k.strip()]
-    if not keys:
-        return await _original_agenerate(self, *args, **kwargs)
-        
-    # Read the current key of 'self' (the original LLM called by browser-use)
-    current_key = getattr(self, "google_api_key", "")
-    if hasattr(current_key, "get_secret_value"):
-        current_key = current_key.get_secret_value()
-        
-    try:
-        start_idx = keys.index(current_key)
-    except ValueError:
-        start_idx = 0
-
-    last_exc = None
-    
-    # Try all keys starting from the current key
-    for offset in range(len(keys)):
-        idx = (start_idx + offset) % len(keys)
-        test_key = keys[idx]
-        
-        # If testing a DIFFERENT key than 'self', we create a completely isolated, 
-        # fresh LLM instance and execute _agenerate entirely on IT!
-        if offset > 0:
-            logger.warning("Gemini 429 Quota Exceeded. Hot-swapping to isolated API key (idx %d -> %d)...", (idx - 1) % len(keys), idx)
-            isolated_llm = ChatGoogleGenerativeAI(
-                model=getattr(self, "model", "gemini-2.0-flash"),
-                temperature=getattr(self, "temperature", 0.0),
-                google_api_key=test_key
-            )
-            executor = isolated_llm
-        else:
-            # First attempt uses the original 'self' object naturally
-            executor = self
-
-        try:
-            return await _original_agenerate(executor, *args, **kwargs)
-        except Exception as e:
-            err_str = str(e).lower()
-            if "429" in err_str or "quota" in err_str or "exhausted" in err_str:
-                last_exc = e
-                continue # move to next key in loop without mutating the current object!
-            else:
-                raise e # Real error (like 400 Bad Request), bubble it up
-                
-    raise last_exc
-
-ChatGoogleGenerativeAI._agenerate = _patched_agenerate
-
 
 # ── App ──────────────────────────────────────────────────────────────────────────
 app = FastAPI(title="Scrayva Worker", lifespan=lifespan)
@@ -418,14 +361,14 @@ async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: 
             try:
                 logger.info("[task:%s] Executing Agent run attempt %d / %d...", task_id, attempt, max_attempts)
                 
-                # Step 1: Init Gemini LLM (FRESH INSTANCE PER ATTEMPT)
-                logger.info("[task:%s] Step 1/5 — Initialising LLM", task_id)
+                # Step 1: Init Gemini LLM
+                logger.info("[task:%s] Step 1/5 — Initialising Google Gemini LLM", task_id)
                 from langchain_google_genai import ChatGoogleGenerativeAI
-                _raw_keys = os.environ.get("GOOGLE_API_KEY", "")
+                _raw_keys = os.environ.get("GEMINI_API_KEY", "")
                 _initial_key = [k.strip() for k in _raw_keys.split(",") if k.strip()][0] if _raw_keys else ""
                 
                 llm = ChatGoogleGenerativeAI(
-                    model=os.environ.get("GEMINI_MODEL", "gemini-2.0-flash"), 
+                    model=os.environ.get("GEMINI_MODEL", "gemini-2.5-flash"), 
                     temperature=0.0,
                     google_api_key=_initial_key
                 )
@@ -433,28 +376,14 @@ async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: 
                 # Step 2: Create browser-use Browser (FRESH INSTANCE PER ATTEMPT)
                 from browser_use import Browser
                 from browser_use.browser.browser import BrowserConfig
-                # Memory-optimized Chromium args to stay under Render's 512MB limit.
+                # Safe Chromium args (Aggressive memory args like --single-process cause hangs on Windows)
                 _CHROMIUM_MEMORY_ARGS = [
                     "--no-sandbox",
                     "--disable-setuid-sandbox",
-                    "--disable-dev-shm-usage",       # Use /tmp instead of /dev/shm
-                    "--disable-gpu",                  # GPU process uses extra RAM
-                    "--disable-extensions",
-                    "--disable-background-networking",
-                    "--disable-default-apps",
-                    "--disable-sync",
-                    "--disable-translate",
-                    "--disable-background-timer-throttling",
-                    "--disable-renderer-backgrounding",
-                    "--disable-device-discovery-notifications",
+                    "--disable-dev-shm-usage",
+                    "--disable-gpu",
                     "--disable-blink-features=AutomationControlled",
-                    "--no-first-run",
                     "--mute-audio",
-                    "--hide-scrollbars",
-                    "--metrics-recording-only",
-                    "--safebrowsing-disable-auto-update",
-                    "--single-process",               # Biggest RAM saver: no separate renderer process
-                    "--js-flags=--max-old-space-size=256",  # Cap V8 heap at 256MB
                     "--window-size=1280,720",
                 ]
                 browser_instance = Browser(
@@ -877,13 +806,13 @@ async def debug_agent(request: DebugAgentRequest):
         return JSONResponse(status_code=500, content={"detail": str(exc)})
 
     try:
-        logger.info("[debug-agent:%s] Init LLM", task_id)
+        logger.info("[debug-agent:%s] Init Google Gemini LLM", task_id)
         from langchain_google_genai import ChatGoogleGenerativeAI
-        _debug_raw_keys = os.environ.get("GOOGLE_API_KEY", "")
+        _debug_raw_keys = os.environ.get("GEMINI_API_KEY", "")
         _debug_initial_key = [k.strip() for k in _debug_raw_keys.split(",") if k.strip()][0] if _debug_raw_keys else ""
         
         llm = ChatGoogleGenerativeAI(
-            model=os.environ.get("GEMINI_MODEL", "gemini-2.0-flash"), 
+            model=os.environ.get("GEMINI_MODEL", "gemini-2.5-flash"), 
             temperature=0.0,
             google_api_key=_debug_initial_key
         )
@@ -898,11 +827,8 @@ async def debug_agent(request: DebugAgentRequest):
                 disable_security=True,
                 extra_chromium_args=[
                     "--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage",
-                    "--disable-gpu", "--disable-extensions", "--disable-background-networking",
-                    "--disable-default-apps", "--disable-sync", "--disable-translate",
-                    "--no-first-run", "--mute-audio", "--hide-scrollbars",
-                    "--single-process", "--js-flags=--max-old-space-size=256",
-                    "--window-size=1280,720",
+                    "--disable-gpu", "--disable-blink-features=AutomationControlled",
+                    "--mute-audio", "--window-size=1280,720",
                 ],
             ))
             logger.info("[debug-agent:%s] Used direct Browser constructor explicitly.", task_id)
@@ -951,3 +877,8 @@ def health():
     logger.info("GET /health → ok | runtime_ok=%s env=%s", runtime_ok, env_status)
     return {"status": "ok", "runtime_ok": runtime_ok, "env": env_status}
 
+if __name__ == "__main__":
+    import uvicorn
+    # IMPORTANT: Do not use --reload on Windows with browser-use as Playwright uses ProactorEventLoop
+    # which conflicts with Uvicorn's reload mechanism.
+    uvicorn.run("worker:app", host="0.0.0.0", port=8000, reload=False)

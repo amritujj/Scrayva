@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Logo from './Logo';
 import { supabase } from '@/lib/supabase';
-import { BarChart3, LayoutDashboard, Settings, Library, Bot, LogOut } from 'lucide-react';
+import { BarChart3, LayoutDashboard, Settings, Library, Bot, LogOut, Mic } from 'lucide-react';
 
 export default function Sidebar() {
   const router = useRouter();
@@ -15,6 +15,7 @@ export default function Sidebar() {
   const navItems = [
     { label: 'Overview',   href: '/dashboard',  icon: LayoutDashboard },
     { label: 'Workflows',  href: '/workflows',  icon: Bot },
+    { label: 'Voice Agent',href: '/ai-receptionist', icon: Mic },
     { label: 'Templates',  href: '/templates',  icon: Library },
     { label: 'Analytics',  href: '#',           icon: BarChart3 },
     { label: 'Settings',   href: '/settings',   icon: Settings },
