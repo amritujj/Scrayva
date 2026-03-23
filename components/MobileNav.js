@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { LayoutDashboard, Bot, Library, Settings } from 'lucide-react';
+import { LayoutDashboard, Bot, Library, Settings, Mic } from 'lucide-react';
 
 export default function MobileNav() {
   const router = useRouter();
@@ -8,6 +8,7 @@ export default function MobileNav() {
   const navItems = [
     { label: 'Dash',      href: '/dashboard',  icon: LayoutDashboard },
     { label: 'Flows',     href: '/workflows',  icon: Bot },
+    { label: 'Voice',     href: '/ai-receptionist', icon: Mic },
     { label: 'Templates',  href: '/templates',  icon: Library },
     { label: 'Settings',   href: '/settings',   icon: Settings },
   ];

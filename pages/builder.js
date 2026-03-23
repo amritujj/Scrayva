@@ -80,6 +80,7 @@ export default function WorkflowBuilder() {
           {[
             { label: 'Dashboard', href: '/dashboard', active: false },
             { label: 'Workflows', href: '/workflows', active: true  },
+            { label: 'Voice Agent', href: '/ai-receptionist', active: false },
             { label: 'Templates', href: '/templates', active: false },
             { label: 'Settings',  href: '/settings',  active: false },
           ].map((item) => (

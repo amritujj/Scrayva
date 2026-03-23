@@ -5,10 +5,12 @@ import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabase';
 import Toast, { useToast } from '../components/Toast';
 import MobileNav from '../components/MobileNav';
+import useScrollReveal from '../hooks/useScrollReveal';
 
 export default function AIReceptionist() {
   const router = useRouter();
   const { toast, showToast } = useToast();
+  useScrollReveal();
   
   // Real Layout State
   const [user, setUser] = useState(null);
