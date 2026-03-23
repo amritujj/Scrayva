@@ -52,7 +52,14 @@ export default function VoiceSetup() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const sessionData = await supabase.auth.getSession();
+      const token = sessionData?.data?.session?.access_token;
+      
+      if (!token) {
+         showToast('Auth session expired. Please log in again.', 'error');
+         setIsSubmitting(false);
+         return;
+      }
       
       const payload = { business_name: businessName, phone_number: phoneNumber, language, working_hours: workingHours, services };
       
@@ -60,7 +67,7 @@ export default function VoiceSetup() {
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
+            'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(payload)
       });
@@ -69,11 +76,15 @@ export default function VoiceSetup() {
         showToast('Agent deployed successfully!', 'success');
         setTimeout(() => router.push('/voice-dashboard'), 1500);
       } else {
-        const err = await res.json();
-        showToast(err.error || 'Failed to deploy agent', 'error');
+        let errStr = 'Failed to deploy agent';
+        try {
+          const err = await res.json();
+          errStr = typeof err.error === 'object' ? JSON.stringify(err.error) : (err.error || errStr);
+        } catch(e) {}
+        showToast(errStr, 'error');
       }
     } catch (e) {
-      showToast('Network error deploying agent', 'error');
+      showToast(`Network block: ${e.message}`, 'error');
     }
     setIsSubmitting(false);
   };

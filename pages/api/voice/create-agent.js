@@ -20,11 +20,15 @@ export default async function handler(req, res) {
   }
 
   // Check if agent already exists
-  const { data: existing } = await supabase
+  const { data: existing, error: checkError } = await supabase
     .from('voice_agents')
     .select('id')
     .eq('user_id', user.id)
     .single();
+
+  if (checkError && checkError.code !== 'PGRST116') {
+    return res.status(500).json({ error: `Database Error: ${checkError.message}. Did you run the voice_schema.sql script in Supabase?` });
+  }
 
   if (existing) {
     // Update existing agent
