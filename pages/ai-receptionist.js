@@ -107,7 +107,7 @@ export default function AIReceptionist() {
         setTimeout(() => {
           setConversation(prev => [
             ...prev,
-            { role: 'agent', text: 'I received your audio input. Since my Sarvam AI backend is currently in Sandbox mode, I cannot process the speech-to-text natively right now. Please enable production API keys in settings to deploy me fully!' }
+            { role: 'agent', text: 'Thank you for your message. I am currently in setup mode. Please configure my knowledge base and system prompts in settings to begin full conversations.' }
           ]);
           setStatus('Idle');
           setIsProcessing(false);
@@ -215,7 +215,7 @@ export default function AIReceptionist() {
                 AI Voice Receptionist
               </h2>
               <p className="text-dark-muted mt-2">
-                Configure your inbound voice agent to handle customer queries and qualify leads natively using Sarvam AI.
+                Configure your inbound voice agent to handle customer queries and qualify leads natively.
               </p>
             </div>
             <div className={`px-4 py-2 rounded-full font-medium text-sm flex items-center gap-2 border transition-colors ${
@@ -261,7 +261,7 @@ export default function AIReceptionist() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-dark-muted mb-2">Voice Model (Sarvam AI)</label>
+                    <label className="block text-sm font-medium text-dark-muted mb-2">Voice Model</label>
                     <select 
                       value={agentVoice}
                       onChange={(e) => setAgentVoice(e.target.value)}
@@ -328,7 +328,7 @@ export default function AIReceptionist() {
                     {isRecording ? 'Listening live...' : isProcessing ? 'Processing request...' : 'Tap to interact with Voice AI'}
                   </h3>
                   <p className="text-sm text-dark-muted mt-2 max-w-md mx-auto">
-                    {isRecording ? 'Speak clearly into your microphone. Visualizer reflects real-time audio.' : 'Test the selected Sarvam AI voice model and configuration.'}
+                    {isRecording ? 'Speak clearly into your microphone. Visualizer reflects real-time audio.' : 'Test the selected voice model and configuration.'}
                   </p>
                 </div>
               </div>

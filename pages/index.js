@@ -425,7 +425,7 @@ export default function Landing() {
               <span data-reveal="left" className="inline-block px-3 py-1 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-full text-xs font-bold tracking-wider uppercase mb-6">New Feature</span>
               <h2 data-reveal="left" data-delay="150" className="text-3xl md:text-5xl font-extrabold text-white mb-6">AI Voice Receptionist</h2>
               <p data-reveal="left" data-delay="300" className="text-slate-400 text-lg mb-8 leading-relaxed">
-                Your web agents can now talk. Powered by <span className="text-white font-semibold">Sarvam AI</span>, Scrayva Voice can handle inbound calls, answer FAQs directly from your scraped data, and book meetings in real-time in Indian languages and English.
+                Your web agents can now talk. Scrayva Voice can handle inbound calls, answer FAQs directly from your scraped data, and book meetings in real-time in Indian languages and English.
               </p>
               <div data-reveal="left" data-delay="450" className="flex flex-wrap items-center gap-4">
                 <Link href="/ai-receptionist" className="px-8 py-3 bg-brand-primary text-white rounded-full font-bold hover:bg-brand-secondary transition-all shadow-lg shadow-brand-primary/20 hover:scale-105 flex items-center gap-2">
