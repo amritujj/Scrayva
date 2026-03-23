@@ -412,27 +412,37 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Voice Teaser ── */}
-      <section className="py-24 bg-gradient-to-b from-[#0b0f1a] to-[#1a1333]">
+      {/* ── Voice Receptionist Feature ── */}
+      <section className="py-24 bg-gradient-to-b from-[#0b0f1a] to-[#1a1333]" id="voice-agent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div data-reveal="scale"
-            className="relative p-6 sm:p-10 md:p-16 rounded-[2rem] sm:rounded-[3rem] overflow-hidden bg-slate-900 border border-brand-primary/20">
-            <div className="absolute top-0 right-0 p-8 opacity-20">
-              <svg className="w-64 h-64 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" />
-              </svg>
+            className="relative p-6 sm:p-10 md:p-16 rounded-[2rem] sm:rounded-[3rem] overflow-hidden bg-slate-900 border border-brand-primary/20 flex flex-col lg:flex-row items-center gap-12">
+            <div className="absolute top-0 right-0 w-full h-full opacity-10 pointer-events-none">
+               <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-500 rounded-full blur-[120px]"></div>
             </div>
-            <div className="relative z-10 max-w-2xl">
-              <span data-reveal="left" className="text-brand-accent text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Coming Soon</span>
+            
+            <div className="relative z-10 w-full lg:w-1/2">
+              <span data-reveal="left" className="inline-block px-3 py-1 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-full text-xs font-bold tracking-wider uppercase mb-6">New Feature</span>
               <h2 data-reveal="left" data-delay="150" className="text-3xl md:text-5xl font-extrabold text-white mb-6">AI Voice Receptionist</h2>
               <p data-reveal="left" data-delay="300" className="text-slate-400 text-lg mb-8 leading-relaxed">
-                What if your web agent could also talk? Scrayva Voice will soon handle inbound calls, answer FAQs based on your website data, and book meetings directly into your calendar.
+                Your web agents can now talk. Powered by <span className="text-white font-semibold">Sarvam AI</span>, Scrayva Voice can handle inbound calls, answer FAQs directly from your scraped data, and book meetings in real-time in Indian languages and English.
               </p>
               <div data-reveal="left" data-delay="450" className="flex flex-wrap items-center gap-4">
-                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=support@scrayva.space&su=Scrayva%20Voice%20Waitlist&body=Hi%2C%20I%20want%20to%20join%20the%20Scrayva%20Voice%20waitlist!" target="_blank" rel="noopener noreferrer" className="px-8 py-3 bg-white text-slate-900 rounded-full font-bold hover:bg-slate-200 transition-colors">
-                  Join the Waitlist
-                </a>
+                <Link href="/ai-receptionist" className="px-8 py-3 bg-brand-primary text-white rounded-full font-bold hover:bg-brand-secondary transition-all shadow-lg shadow-brand-primary/20 hover:scale-105 flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+                  Try Voice Agent Live
+                </Link>
               </div>
+            </div>
+            
+            <div className="relative z-10 w-full lg:w-1/2 flex justify-center lg:justify-end" data-reveal="right" data-delay="200">
+               <div className="relative w-64 h-64 bg-black/40 border border-white/10 rounded-full flex items-center justify-center p-8 shadow-2xl">
+                 <div className="absolute inset-0 border-2 border-brand-primary/30 rounded-full animate-[ping_3s_ease-in-out_infinite]"></div>
+                 <div className="absolute inset-4 border-2 border-brand-primary/20 rounded-full animate-[ping_3s_ease-in-out_infinite_0.5s]"></div>
+                 <div className="relative z-10 w-32 h-32 bg-gradient-to-tr from-brand-primary to-pink-500 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(168,85,247,0.6)] hover:scale-110 cursor-pointer transition-transform">
+                   <svg className="w-12 h-12 text-white ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+                 </div>
+               </div>
             </div>
           </div>
         </div>
