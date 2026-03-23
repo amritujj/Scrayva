@@ -15,7 +15,7 @@ export default function Sidebar() {
   const navItems = [
     { label: 'Overview',   href: '/dashboard',  icon: LayoutDashboard },
     { label: 'Workflows',  href: '/workflows',  icon: Bot },
-    { label: 'Voice Agent',href: '/ai-receptionist', icon: Mic },
+    { label: 'Voice Agent',href: '/voice-dashboard', icon: Mic },
     { label: 'Templates',  href: '/templates',  icon: Library },
     { label: 'Analytics',  href: '#',           icon: BarChart3 },
     { label: 'Settings',   href: '/settings',   icon: Settings },

@@ -8,7 +8,7 @@ export default function MobileNav() {
   const navItems = [
     { label: 'Dash',      href: '/dashboard',  icon: LayoutDashboard },
     { label: 'Flows',     href: '/workflows',  icon: Bot },
-    { label: 'Voice',     href: '/ai-receptionist', icon: Mic },
+    { label: 'Voice',     href: '/voice-dashboard', icon: Mic },
     { label: 'Templates',  href: '/templates',  icon: Library },
     { label: 'Settings',   href: '/settings',   icon: Settings },
   ];
