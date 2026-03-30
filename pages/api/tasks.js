@@ -36,11 +36,12 @@ export default async function handler(req, res) {
       });
       if (updateError) throw updateError;
       
-      // 1. Create task in Supabase without priority column for now
+      // 1. Create task in Supabase
+      // workspace_id uses user.id as a stable stand-in (satisfies NOT NULL constraint)
       const taskId = crypto.randomUUID();
       const { data: task, error: insertError } = await supabase
         .from('tasks')
-        .insert([{ id: taskId, prompt, status: 'queued', user_id: user.id }])
+        .insert([{ id: taskId, prompt, status: 'queued', user_id: user.id, workspace_id: user.id }])
         .select()
         .single();
         
