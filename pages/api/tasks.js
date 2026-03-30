@@ -38,10 +38,12 @@ export default async function handler(req, res) {
       
       // 1. Create task in Supabase
       // workspace_id uses user.id as a stable stand-in (satisfies NOT NULL constraint)
+      // title is derived from the prompt (satisfies NOT NULL constraint)
       const taskId = crypto.randomUUID();
+      const title = prompt.length > 80 ? prompt.slice(0, 77) + '...' : prompt;
       const { data: task, error: insertError } = await supabase
         .from('tasks')
-        .insert([{ id: taskId, prompt, status: 'queued', user_id: user.id, workspace_id: user.id }])
+        .insert([{ id: taskId, title, prompt, status: 'queued', user_id: user.id, workspace_id: user.id }])
         .select()
         .single();
         
