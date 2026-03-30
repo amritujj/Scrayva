@@ -37,9 +37,10 @@ export default async function handler(req, res) {
       if (updateError) throw updateError;
       
       // 1. Create task in Supabase without priority column for now
+      const taskId = crypto.randomUUID();
       const { data: task, error: insertError } = await supabase
         .from('tasks')
-        .insert([{ prompt, status: 'queued', user_id: user.id }])
+        .insert([{ id: taskId, prompt, status: 'queued', user_id: user.id }])
         .select()
         .single();
         
