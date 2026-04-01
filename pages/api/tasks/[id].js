@@ -16,13 +16,23 @@ export default async function handler(req, res) {
 
     if (req.method === 'DELETE') {
       const workerUrl = process.env.WORKER_URL || 'http://localhost:8000';
+      // Ask the worker to cancel the running asyncio task (best-effort)
       try {
-        await fetch(`${workerUrl}/cancel-agent/${id}`, { method: 'POST' });
+        const workerRes = await fetch(`${workerUrl}/cancel-agent/${id}`, { method: 'POST' });
+        if (!workerRes.ok) console.warn(`Worker cancel returned ${workerRes.status} for ${id}`);
       } catch (err) {
-        console.error(`Worker cancel ping failed for ${id}:`, err.message);
+        console.warn(`Worker cancel ping failed for ${id}:`, err.message);
       }
-      // Provide a fast local DB update just in case the worker map was lost
-      await supabase.from('tasks').update({ status: 'failed', error: 'Cancelled by user.' }).eq('id', id);
+      // Always update the DB, scoped to the authenticated user so nobody can cancel someone else's task
+      const { error: dbErr } = await supabase
+        .from('tasks')
+        .update({ status: 'cancelled', error: 'Cancelled by user.' })
+        .eq('id', id)
+        .eq('user_id', user.id);
+      if (dbErr) {
+        console.error(`DB cancel update failed for ${id}:`, dbErr.message);
+        return res.status(500).json({ error: 'Failed to cancel task in database.' });
+      }
       return res.status(200).json({ status: 'cancelled' });
     }
 

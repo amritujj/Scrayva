@@ -62,10 +62,20 @@ export default function TaskDetail() {
     
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const headers = session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {};
+      const headers = session?.access_token
+        ? { 'Authorization': `Bearer ${session.access_token}` }
+        : {};
       
-      await fetch(`/api/tasks/${id}`, { method: 'DELETE', headers });
-    } catch {}
+      const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE', headers });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        showToast(body.error || 'Failed to cancel task. Please try again.', 'error');
+        return;
+      }
+    } catch (err) {
+      showToast('Network error while cancelling. Please try again.', 'error');
+      return;
+    }
 
     showToast('Task cancelled.', 'error');
     setTimeout(() => router.push('/dashboard'), 1000);
@@ -162,13 +172,13 @@ export default function TaskDetail() {
   const statusLower = task.status?.toLowerCase() || 'queued';
   const isCompleted = statusLower === 'completed';
   const isFailed = statusLower === 'failed';
+  const isCancelled = statusLower === 'cancelled';
   
   // Map our DB status string to a numeric step
   let CURRENT_STEP = 0;
   if (statusLower === 'running') CURRENT_STEP = 1;
-  // If we have a result block but it's not strictly 'completed' (e.g. streaming, though we don't currently stream)
   if (statusLower === 'running' && task.result) CURRENT_STEP = 2;
-  if (isCompleted || isFailed) CURRENT_STEP = 3;
+  if (isCompleted || isFailed || isCancelled) CURRENT_STEP = 3;
 
   // Safely extract table data if it exists
   let tableRows = [];
@@ -254,6 +264,11 @@ export default function TaskDetail() {
             </div>
           </section>
 
+          {isCancelled && (
+            <div className="mx-3 mb-2 px-3 py-2 bg-orange-500/10 border border-orange-500/20 rounded-lg text-xs text-orange-400 font-medium">
+              ⚠ Task was cancelled by user.
+            </div>
+          )}
           {isFailed && task.error && (
             <section>
               <h3 className="text-[10px] lg:text-xs font-semibold text-red-400 uppercase tracking-widest mb-2 lg:mb-3 flex items-center gap-2">

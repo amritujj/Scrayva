@@ -721,21 +721,26 @@ async def cancel_agent(task_id: str):
     logger.info("[task:%s] Cancel request received.", task_id)
     task = ACTIVE_TASKS.get(task_id)
     
-    # Update Supabase anyway just in case it's queued but not picked up yet by this exact worker
+    # Update Supabase: mark as cancelled with error message in the dedicated error column
     try:
         supabase = get_supabase_client()
-        _set_task_status(supabase, task_id, "failed", {"error": "Cancelled by user."})
+        supabase.table("tasks").update({
+            "status": "cancelled",
+            "error": "Cancelled by user."
+        }).eq("id", task_id).execute()
+        logger.info("[task:%s] DB updated to cancelled.", task_id)
     except Exception as e:
         logger.error("[task:%s] Failed to update supabase on cancel: %s", task_id, e)
 
     if not task:
-        return JSONResponse(status_code=404, content={"detail": "Task marked as cancelled in DB, but no active native process found to abort."})
+        logger.warning("[task:%s] No active asyncio task found — task may have already finished.", task_id)
+        return JSONResponse(status_code=200, content={"status": "cancelled", "task_id": task_id, "note": "DB updated; no running process found."})
     
     # Send the native asyncio abort signal
     task.cancel()
     ACTIVE_TASKS.pop(task_id, None)
         
-    logger.info("[task:%s] Native Python Task cancelled successfully.", task_id)
+    logger.info("[task:%s] asyncio task cancelled successfully.", task_id)
     return JSONResponse(status_code=200, content={"status": "cancelled", "task_id": task_id})
 
 
