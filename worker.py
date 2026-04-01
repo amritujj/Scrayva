@@ -15,6 +15,13 @@ os.environ["TEMP"]   = _SAFE_TMP
 os.environ["TMPDIR"] = _SAFE_TMP
 tempfile.tempdir     = _SAFE_TMP
 
+# ── FIX: Force Playwright to look inside the virtual environment for browsers ──
+# Render securely bundles the virtualenv to production but deletes the global .cache folder.
+# By setting this to 0, Playwright installs and checks for browsers inside site-packages
+# ensuring they survive the transit from the Build container to the Runtime container.
+os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "0"
+
+
 import sys
 import json
 import logging
@@ -238,7 +245,7 @@ async def lifespan(app: FastAPI):
                     # health checker gets no response → Render kills the service.
                     import subprocess as _sp
                     _install_proc = await asyncio.create_subprocess_exec(
-                        "python", "-m", "playwright", "install", "--with-deps", "chromium-headless-shell",
+                        "python", "-m", "playwright", "install", "chromium-headless-shell",
                         stdout=_sp.PIPE,
                         stderr=_sp.STDOUT,
                     )
