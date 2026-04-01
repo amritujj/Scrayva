@@ -464,7 +464,11 @@ async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: 
     # ── Agent execution ───────────────────────────────────────────────────────────
     try:
         final_result_str = None
-        max_attempts = 1  # No outer retries — each failed attempt burns Gemini quota
+        # max_attempts = number of available API keys.
+        # Each attempt calls _get_next_api_key() which advances _KEY_INDEX by 1.
+        # So if task uses keys 1→2→3, _KEY_INDEX lands on 4 and the next task starts there.
+        _available_keys = [k.strip() for k in os.environ.get("GEMINI_API_KEY", "").split(",") if k.strip()]
+        max_attempts = max(1, len(_available_keys))  # at most one attempt per API key
         agent_failure_data = None
         
         for attempt in range(1, max_attempts + 1):
@@ -607,6 +611,27 @@ async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: 
                         }
                         _set_task_status(supabase, task_id, "completed", fallback_result)
                         return
+
+                    # ── Detect quota-exhausted failure ────────────────────────────────────────
+                    # If 429 errors fill the agent history, the final_result() is always empty.
+                    # Rather than treating this as a valid "fallback", rotate to the next API key.
+                    _history_text = ""
+                    try:
+                        _h = result.history if hasattr(result, "history") else []
+                        for _step in _h:
+                            for _ar in (getattr(_step, "result", None) or []):
+                                _history_text += str(getattr(_ar, "error", "") or "") + " "
+                    except Exception:
+                        pass
+                    _is_quota_failure = "429" in _history_text or "ResourceExhausted" in _history_text or "quota" in _history_text.lower()
+
+                    if _is_quota_failure and attempt < max_attempts:
+                        logger.warning(
+                            "[task:%s] Attempt %d/%d: API key quota exhausted (429). "
+                            "Rotating to next API key.",
+                            task_id, attempt, max_attempts,
+                        )
+                        continue  # _get_next_api_key() will be called at the top of the next attempt
 
                     if attempt < max_attempts:
                         logger.info("[task:%s] No fallback text found. Retrying...", task_id)
