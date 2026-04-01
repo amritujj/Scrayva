@@ -7,6 +7,8 @@ services:
     buildCommand: pip install -r requirements.txt && python -m playwright install chromium chromium-headless-shell
     startCommand: uvicorn worker:app --host 0.0.0.0 --port $PORT
     envVars:
+      - key: PLAYWRIGHT_BROWSERS_PATH
+        value: "0"
       - key: GOOGLE_API_KEY
         sync: false
       - key: SUPABASE_URL
