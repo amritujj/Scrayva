@@ -259,10 +259,46 @@ async def lifespan(app: FastAPI):
     
     if all(v["ok"] for v in RUNTIME.values()):
         logger.info("✓ All runtime dependencies fully verified. Worker is completely ready.")
-        
+
+    # ── Startup recovery: fix tasks orphaned by a previous Render restart ─────────
+    # When Render redeploys (on a git push), it sends SIGTERM to the running process.
+    # Any task in "running" state at that moment gets stuck forever because the new
+    # worker instance has no memory of it. On every boot we reset those tasks.
+    try:
+        _recovery_sb = get_supabase_client()
+        _orphaned = (
+            _recovery_sb.table("tasks")
+            .update({
+                "status": "failed",
+                "error": "Worker restarted during execution (Render redeploy). Please retry your task.",
+            })
+            .eq("status", "running")
+            .execute()
+        )
+        _count = len(_orphaned.data) if _orphaned.data else 0
+        if _count:
+            logger.warning("⚠ Startup recovery: reset %d orphaned 'running' task(s) to 'failed'.", _count)
+        else:
+            logger.info("✓ Startup recovery: no orphaned tasks found.")
+    except Exception as _rec_err:
+        logger.error("Startup recovery failed (non-fatal): %s", _rec_err)
+
     yield  # Normal app traffic executes while yielding
-    
-    # Optional shutdown logic goes here
+
+    # ── Graceful shutdown: mark any still-active tasks as failed ──────────────────
+    if ACTIVE_TASKS:
+        logger.warning("Shutdown: %d active task(s) will be interrupted.", len(ACTIVE_TASKS))
+        try:
+            _shutdown_sb = get_supabase_client()
+            for _tid in list(ACTIVE_TASKS.keys()):
+                _shutdown_sb.table("tasks").update({
+                    "status": "failed",
+                    "error": "Worker shut down during task execution. Please retry.",
+                }).eq("id", _tid).execute()
+                logger.info("[task:%s] Marked as failed due to worker shutdown.", _tid)
+        except Exception as _sd_err:
+            logger.error("Shutdown task cleanup failed: %s", _sd_err)
+
 
 
 
