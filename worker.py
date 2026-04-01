@@ -420,8 +420,35 @@ async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: 
             try:
                 logger.info("[task:%s] Executing Agent run attempt %d / %d...", task_id, attempt, max_attempts)
                 
-                # Step 1: Init Gemini LLM
-                logger.info("[task:%s] Step 1/5 — Initialising Google Gemini LLM", task_id)
+                # ── Step 1: Launch browser FIRST (before any gRPC/LLM init) ──────────────
+                # CRITICAL ordering: Playwright forks a Chrome subprocess using fork().
+                # If gRPC (used by Gemini SDK) has active threads when fork() runs,
+                # gRPC skips its fork-handlers → Chrome inherits broken network FDs
+                # → ALL page.goto() calls timeout. Always fork Chrome before gRPC connects.
+                from browser_use import Browser
+                from browser_use.browser.browser import BrowserConfig
+                _CHROMIUM_ARGS = [
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--disable-gpu",
+                    "--disable-blink-features=AutomationControlled",
+                    "--no-zygote",                           # skip zygote process to avoid double-fork gRPC clash
+                    "--disable-features=VizDisplayCompositor", # reduce subprocess overhead on Render
+                    "--mute-audio",
+                    "--window-size=1280,720",
+                ]
+                browser_instance = Browser(
+                    config=BrowserConfig(
+                        headless=IS_HEADLESS,
+                        disable_security=True,
+                        extra_chromium_args=_CHROMIUM_ARGS,
+                    )
+                )
+                logger.info("[task:%s] Step 1/5 — Browser launched (before gRPC init)", task_id)
+
+                # ── Step 2: Init Gemini LLM (safe — browser already forked) ─────────────
+                logger.info("[task:%s] Step 2/5 — Initialising Google Gemini LLM", task_id)
                 from langchain_google_genai import ChatGoogleGenerativeAI
                 _raw_keys = os.environ.get("GEMINI_API_KEY", "")
                 _initial_key = [k.strip() for k in _raw_keys.split(",") if k.strip()][0] if _raw_keys else ""
@@ -431,28 +458,7 @@ async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: 
                     temperature=0.0,
                     google_api_key=_initial_key
                 )
-
-                # Step 2: Create browser-use Browser (FRESH INSTANCE PER ATTEMPT)
-                from browser_use import Browser
-                from browser_use.browser.browser import BrowserConfig
-                # Safe Chromium args (Aggressive memory args like --single-process cause hangs on Windows)
-                _CHROMIUM_MEMORY_ARGS = [
-                    "--no-sandbox",
-                    "--disable-setuid-sandbox",
-                    "--disable-dev-shm-usage",
-                    "--disable-gpu",
-                    "--disable-blink-features=AutomationControlled",
-                    "--mute-audio",
-                    "--window-size=1280,720",
-                ]
-                browser_instance = Browser(
-                    config=BrowserConfig(
-                        headless=IS_HEADLESS,
-                        disable_security=True,
-                        extra_chromium_args=_CHROMIUM_MEMORY_ARGS,
-                    )
-                )
-                logger.info("[task:%s] Step 2/5.1 — Custom local Browser explicitly instantiated", task_id)
+                logger.info("[task:%s] Step 2/5 — Gemini LLM ready", task_id)
                 
                 # Wrap the user prompt with explicit browser-use instructions.
                 wrapped_prompt = (
