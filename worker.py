@@ -577,7 +577,12 @@ async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: 
             
         try:
             result_json = json.loads(final_result_str)
-            logger.info("[task:%s] Step 5/5 — Result parsed as JSON", task_id)
+            # json.loads("null") returns Python None — treat it as plain text
+            if result_json is None:
+                result_json = {"output": final_result_str or "Agent completed but returned no content."}
+                logger.warning("[task:%s] Step 5/5 — json.loads returned None (agent said 'null'), wrapping as plain text", task_id)
+            else:
+                logger.info("[task:%s] Step 5/5 — Result parsed as JSON", task_id)
         except (json.JSONDecodeError, TypeError):
             result_json = {"output": final_result_str}
             logger.info(
@@ -585,7 +590,7 @@ async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: 
                 task_id,
             )
 
-        if "error" in result_json and len(result_json.keys()) == 1:
+        if result_json and isinstance(result_json, dict) and "error" in result_json and len(result_json.keys()) == 1:
             err_msg = f"Agent completed but reported internal failure: {result_json['error']}"
             diagnostic_data = {
                  "error": err_msg,
