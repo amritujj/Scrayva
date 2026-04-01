@@ -30,11 +30,14 @@ export default async function handler(req, res) {
 
       const { prompt } = req.body;
       
-      // 1. Deduct credit
+      // 1. Deduct credit (non-blocking — failure warns but never kills task creation)
       const { error: updateError } = await supabase.auth.admin.updateUserById(user.id, {
         user_metadata: { ...user.user_metadata, credits: credits - 1 }
       });
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.warn(`[tasks] Credit deduction failed for user ${user.id}:`, updateError.message);
+        // Don't throw — task creation should still proceed
+      }
       
       // 1. Create task in Supabase
       // workspace_id uses user.id as a stable stand-in (satisfies NOT NULL constraint)
