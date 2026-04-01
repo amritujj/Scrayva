@@ -71,10 +71,15 @@ if sys.platform == "win32":
         )
 
 # ── Startup env-var validation ───────────────────────────────────────────────────
+# Core vars required for agent task execution
 REQUIRED_VARS: dict[str, str] = {
     "GEMINI_API_KEY": "Google Gemini API access",
     "SUPABASE_URL": "Supabase project URL",
     "SUPABASE_SERVICE_ROLE_KEY": "Supabase service-role key",
+}
+
+# Optional vars — only needed for Voice features, not core agent tasks
+OPTIONAL_VARS: dict[str, str] = {
     "SARVAM_API_KEY": "Sarvam AI access for Voice features",
 }
 

@@ -55,7 +55,7 @@ export default async function handler(req, res) {
       // 2. Trigger worker which now immediately returns 202 via BackgroundTasks.
       // We await it so Vercel does not terminate the TCP connection prematurely.
       try {
-        await fetch(`${workerUrl}/run-agent`, {
+        const workerRes = await fetch(`${workerUrl}/run-agent`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -65,8 +65,12 @@ export default async function handler(req, res) {
             priority: priority   // ← for logging/debugging
           })
         });
+        if (!workerRes.ok) {
+          const workerErr = await workerRes.text();
+          console.warn(`[API] Worker returned HTTP ${workerRes.status} for task ${task.id}: ${workerErr}`);
+        }
       } catch (err) {
-        console.warn(`[API] Worker trigger failed, but task ${task.id} is queued in DB:`, err.message);
+        console.warn(`[API] Worker trigger failed (network), task ${task.id} stays queued:`, err.message);
       }
 
       return res.status(201).json(task);
