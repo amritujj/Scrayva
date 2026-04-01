@@ -1,7 +1,14 @@
 import os
 import tempfile
 
-_SAFE_TMP = r"E:\scrayva.web\tmp"
+# Use a cross-platform temp directory (works on both Windows and Linux/Render)
+if os.name == "nt":
+    # Windows: use a local tmp folder to avoid system temp permission issues
+    _SAFE_TMP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp")
+else:
+    # Linux/Render: use the standard system temp directory
+    _SAFE_TMP = tempfile.gettempdir()
+
 os.makedirs(_SAFE_TMP, exist_ok=True)
 os.environ["TMP"]    = _SAFE_TMP
 os.environ["TEMP"]   = _SAFE_TMP
