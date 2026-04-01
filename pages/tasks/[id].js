@@ -296,14 +296,29 @@ export default function TaskDetail() {
 
           <div className="flex-1 overflow-auto relative">
             {(!task.result && !isFailed) && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600 gap-4">
-                <svg className="w-12 h-12 animate-spin text-sky-400/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                </svg>
-                <div className="text-center">
-                  <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{statusLower}...</p>
-                  <p className="text-xs text-slate-500 mt-2 max-w-sm">The agent is navigating the web and extracting information. This can take a few minutes.</p>
-                </div>
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
+                {task.screenshot ? (
+                  <div className="w-full max-w-4xl border border-scrayva-dark-border rounded-xl overflow-hidden shadow-2xl relative bg-black">
+                    <div className="absolute top-3 left-3 bg-slate-900/90 backdrop-blur border border-slate-700/50 px-2.5 py-1 text-[10px] text-green-400 font-mono rounded flex items-center gap-2 z-10">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                      </span>
+                      LIVE VIEW
+                    </div>
+                    <img src={task.screenshot} alt="Agent View" className="w-full h-auto object-contain max-h-[65vh] opacity-90 transition-opacity duration-300" />
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-slate-600 gap-4">
+                    <svg className="w-12 h-12 animate-spin text-sky-400/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                    </svg>
+                    <div className="text-center">
+                      <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{statusLower}...</p>
+                      <p className="text-xs text-slate-500 mt-2 max-w-sm">The agent is navigating the web and extracting information. This can take a few minutes.</p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

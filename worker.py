@@ -340,6 +340,36 @@ TIER_CONFIG = {
 # ── Global Task State ─────────────────────────────────────────────────────────────
 ACTIVE_TASKS: dict[str, asyncio.Task] = {}
 
+import base64
+
+async def _screenshot_loop(browser, supabase: Client, task_id: str):
+    """Periodically captures screenshots of the browser and drops them as a base64 string into the DB."""
+    while True:
+        try:
+            pw_browser = await browser.get_playwright_browser()
+            if pw_browser and pw_browser.contexts:
+                context = pw_browser.contexts[0]
+                if context.pages:
+                    page = context.pages[0]
+                    # Take a quick, low-quality JPEG to preserve DB bandwidth on Render
+                    screenshot_bytes = await page.screenshot(type="jpeg", quality=40)
+                    b64 = base64.b64encode(screenshot_bytes).decode("utf-8")
+                    data_uri = f"data:image/jpeg;base64,{b64}"
+                    
+                    # Update exclusively the screenshot field
+                    try:
+                        supabase.table("tasks").update({"screenshot": data_uri}).eq("id", task_id).execute()
+                    except Exception as exc:
+                        logger.warning("[task:%s] Screenshot update failing (missing column?): %s", task_id, exc)
+
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            pass # Transient issues like page closed while shooting
+
+        await asyncio.sleep(3)
+
+
 async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: int, queue_delay: int, max_steps: int):
     # Init Supabase
     logger.info("[task:%s] Step 0.5 — Initializing Supabase client", task_id)
@@ -428,7 +458,12 @@ async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: 
                 logger.info("[task:%s] Step 2/5 — Agent created", task_id)
 
                 logger.info("[task:%s] Step 3/5 — agent.run() started (max_steps=%d, timeout=300s)", task_id, max_steps)
-                result = await asyncio.wait_for(agent.run(max_steps=max_steps), timeout=300.0)
+                screenshot_task = asyncio.create_task(_screenshot_loop(browser_instance, supabase, task_id))
+                
+                try:
+                    result = await asyncio.wait_for(agent.run(max_steps=max_steps), timeout=300.0)
+                finally:
+                    screenshot_task.cancel()
                 
                 final_result_str = result.final_result()
                 
