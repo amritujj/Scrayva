@@ -519,9 +519,10 @@ async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: 
                     model=_model,
                     temperature=0.0,
                     google_api_key=_primary_key,
-                    transport="rest",  # REST over HTTPS — no gRPC, no fork() conflicts
+                    # Note: do NOT set transport="rest" — REST returns sync GenerateContentResponse
+                    # which langchain's async _achat_with_retry cannot await, breaking every call.
                 )
-                logger.info("[task:%s] Step 2/5 — Gemini LLM ready (model=%s, REST transport)", task_id, _model)
+                logger.info("[task:%s] Step 2/5 — Gemini LLM ready (model=%s)", task_id, _model)
                 
                 # Wrap the user prompt with explicit browser-use instructions.
                 wrapped_prompt = (
