@@ -356,10 +356,10 @@ async def _screenshot_loop(browser, supabase: Client, task_id: str):
                 # We set this once on the first available context. Subsequent Page.goto calls will use 90s.
                 if not timeout_extended:
                     try:
-                        context.set_default_navigation_timeout(90_000)  # 90 seconds
-                        context.set_default_timeout(90_000)
+                        context.set_default_navigation_timeout(45_000)  # 45s — 3 failures × 45s = 135s, under 240s total
+                        context.set_default_timeout(45_000)
                         timeout_extended = True
-                        logger.info("[task:%s] ✓ Extended Playwright navigation timeout to 90s", task_id)
+                        logger.info("[task:%s] ✓ Extended Playwright navigation timeout to 45s", task_id)
                     except Exception as te:
                         logger.warning("[task:%s] Could not extend nav timeout: %s", task_id, te)
 
@@ -474,18 +474,33 @@ async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: 
                     task=wrapped_prompt,
                     llm=llm,
                     browser=browser_instance,
-                    max_failures=5,   # extra tolerance for Render's flaky network
+                    max_failures=3,   # 3 failures max — with 45s nav timeout that's 3×45=135s, safely under 240s
                     use_vision=False,
                 )
                 logger.info("[task:%s] Step 2/5 — Agent created", task_id)
 
-                logger.info("[task:%s] Step 3/5 — agent.run() started (max_steps=%d, timeout=300s)", task_id, max_steps)
+                logger.info("[task:%s] Step 3/5 — agent.run() started (max_steps=%d, timeout=240s)", task_id, max_steps)
                 screenshot_task = asyncio.create_task(_screenshot_loop(browser_instance, supabase, task_id))
-                
+
+                # Wrap in a named task so we can force-cancel it even if browser-use
+                # exception handlers swallow asyncio.CancelledError internally.
+                agent_task = asyncio.create_task(agent.run(max_steps=max_steps))
                 try:
-                    result = await asyncio.wait_for(agent.run(max_steps=max_steps), timeout=300.0)
+                    result = await asyncio.wait_for(asyncio.shield(agent_task), timeout=240.0)
+                except asyncio.TimeoutError:
+                    logger.error("[task:%s] ✗ Hard 240s timeout reached — force-cancelling agent task.", task_id)
+                    agent_task.cancel()
+                    try:
+                        await asyncio.wait_for(agent_task, timeout=10.0)
+                    except (asyncio.CancelledError, asyncio.TimeoutError):
+                        pass
+                    raise  # re-raise so the outer TimeoutError handler marks the task failed
                 finally:
                     screenshot_task.cancel()
+                    try:
+                        await asyncio.wait_for(screenshot_task, timeout=5.0)
+                    except (asyncio.CancelledError, asyncio.TimeoutError):
+                        pass
                 
                 final_result_str = result.final_result()
                 
