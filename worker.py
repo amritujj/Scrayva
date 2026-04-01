@@ -499,35 +499,25 @@ async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: 
                 )
                 logger.info("[task:%s] Step 1/5 — Browser launched (before gRPC init)", task_id)
 
-                # ── Step 2: Init Gemini LLM (safe — browser already forked) ─────────────
-                # Model: gemini-1.5-flash has 1500 RPD free tier vs gemini-2.5-flash's 20 RPD.
-                # Key rotation: each task gets the next key from the comma-separated list so
-                # multiple projects share the load and one exhausted key doesn't block everything.
+                # ── Step 2: Init Gemini LLM ──────────────────────────────────────────────────
+                # - Model: gemini-1.5-flash → 1500 RPD free tier (vs 2.5-flash's 20 RPD)
+                # - transport="rest" → forces HTTP instead of gRPC; eliminates ALL gRPC fork() 
+                #   conflicts permanently, even when multiple tasks run back-to-back.
+                # - Key rotation: round-robin so each task uses a different API key from the
+                #   comma-separated GEMINI_API_KEY list (each Google project = separate quota).
                 logger.info("[task:%s] Step 2/5 — Initialising Google Gemini LLM", task_id)
                 from langchain_google_genai import ChatGoogleGenerativeAI
-                from google.api_core.exceptions import ResourceExhausted
 
                 _model = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
-                _all_keys = [k.strip() for k in os.environ.get("GEMINI_API_KEY", "").split(",") if k.strip()]
                 _primary_key = _get_next_api_key()
 
                 llm = ChatGoogleGenerativeAI(
                     model=_model,
                     temperature=0.0,
                     google_api_key=_primary_key,
+                    transport="rest",  # REST over HTTPS — no gRPC, no fork() conflicts
                 )
-
-                # Build a fallback chain using the remaining keys so mid-task 429s auto-rotate.
-                _fallback_keys = [k for k in _all_keys if k != _primary_key]
-                if _fallback_keys:
-                    _fallbacks = [
-                        ChatGoogleGenerativeAI(model=_model, temperature=0.0, google_api_key=k)
-                        for k in _fallback_keys
-                    ]
-                    llm = llm.with_fallbacks(_fallbacks, exceptions_to_handle=(ResourceExhausted,))
-                    logger.info("[task:%s] Step 2/5 — Gemini LLM ready with %d fallback key(s)", task_id, len(_fallback_keys))
-                else:
-                    logger.info("[task:%s] Step 2/5 — Gemini LLM ready (single key, no fallbacks)", task_id)
+                logger.info("[task:%s] Step 2/5 — Gemini LLM ready (model=%s, REST transport)", task_id, _model)
                 
                 # Wrap the user prompt with explicit browser-use instructions.
                 wrapped_prompt = (
