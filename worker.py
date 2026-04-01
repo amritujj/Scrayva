@@ -238,7 +238,7 @@ async def lifespan(app: FastAPI):
                     # health checker gets no response → Render kills the service.
                     import subprocess as _sp
                     _install_proc = await asyncio.create_subprocess_exec(
-                        "python", "-m", "playwright", "install", "chromium", "--with-deps",
+                        "python", "-m", "playwright", "install", "--with-deps", "chromium-headless-shell",
                         stdout=_sp.PIPE,
                         stderr=_sp.STDOUT,
                     )
