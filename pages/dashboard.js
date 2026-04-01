@@ -100,7 +100,7 @@ export default function Dashboard() {
         const task = await res.json();
         setCredits(prev => Math.max(0, (prev || 0) - 1));
         const queueMsg = tier === 'Free'
-          ? 'Task queued! Your task will start in ~60s (Free plan). Upgrade for instant start.'
+          ? 'Task queued! Your task will start in ~30s (Free plan). Upgrade for instant start.'
           : 'Task queued! Starting immediately...';
         showToast(queueMsg, 'success');
         setPrompt('');
@@ -290,7 +290,7 @@ export default function Dashboard() {
                       <div className="flex items-center gap-3 mb-1.5">
                         <span className="text-xs font-mono text-dark-muted bg-white/5 px-2 py-0.5 rounded">#{task.id.split('-')[0]}</span>
                         {getStatusBadge(task.status)}
-                        <span className="text-xs text-dark-muted">{new Date(task.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' })}</span>
+                        <span className="text-xs text-dark-muted">{new Date(task.created_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true })}</span>
                       </div>
                       <p className="text-sm text-slate-300 truncate font-medium">{task.prompt}</p>
                       {task.error && <p className="text-xs text-red-400 mt-1 truncate">{task.error}</p>}
