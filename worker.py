@@ -231,10 +231,20 @@ async def lifespan(app: FastAPI):
             RUNTIME["playwright"]["error"] = f"Check failed: {err_msg}"
             
             if "Executable doesn't exist" in err_msg or "executablePath" in err_msg:
-                logger.warning("Chromium executable missing. Auto-installing Playwright browsers...")
+                logger.warning("Chromium executable missing. Auto-installing asynchronously (non-blocking)...")
                 try:
-                    import subprocess
-                    subprocess.run(["python", "-m", "playwright", "install", "chromium"], check=True)
+                    # MUST use asyncio subprocess — blocking subprocess.run() freezes the
+                    # event loop for the full download duration (~3 min) and Render's HTTP
+                    # health checker gets no response → Render kills the service.
+                    import subprocess as _sp
+                    _install_proc = await asyncio.create_subprocess_exec(
+                        "python", "-m", "playwright", "install", "chromium", "--with-deps",
+                        stdout=_sp.PIPE,
+                        stderr=_sp.STDOUT,
+                    )
+                    _install_stdout, _ = await _install_proc.communicate()
+                    if _install_proc.returncode != 0:
+                        raise RuntimeError(f"playwright install exited {_install_proc.returncode}: {(_install_stdout or b'').decode()[-500:]}")
                     logger.info("Auto-installation complete. Retrying launch verification...")
                     from playwright.async_api import async_playwright
                     async with async_playwright() as _p_retry:
