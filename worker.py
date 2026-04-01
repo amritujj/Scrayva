@@ -344,11 +344,25 @@ import base64
 
 async def _screenshot_loop(browser, supabase: Client, task_id: str):
     """Periodically captures screenshots of the browser and drops them as a base64 string into the DB."""
+    timeout_extended = False
+    first_iteration = True
     while True:
         try:
             pw_browser = await browser.get_playwright_browser()
             if pw_browser and pw_browser.contexts:
                 context = pw_browser.contexts[0]
+
+                # Fix Playwright's 30s default nav timeout — Render's network needs more breathing room.
+                # We set this once on the first available context. Subsequent Page.goto calls will use 90s.
+                if not timeout_extended:
+                    try:
+                        context.set_default_navigation_timeout(90_000)  # 90 seconds
+                        context.set_default_timeout(90_000)
+                        timeout_extended = True
+                        logger.info("[task:%s] ✓ Extended Playwright navigation timeout to 90s", task_id)
+                    except Exception as te:
+                        logger.warning("[task:%s] Could not extend nav timeout: %s", task_id, te)
+
                 if context.pages:
                     page = context.pages[0]
                     # Take a quick, low-quality JPEG to preserve DB bandwidth on Render
@@ -367,7 +381,9 @@ async def _screenshot_loop(browser, supabase: Client, task_id: str):
         except Exception as e:
             pass # Transient issues like page closed while shooting
 
-        await asyncio.sleep(3)
+        # First tick at 1s so we set the timeout ASAP; then settle to 3s cadence.
+        await asyncio.sleep(1 if first_iteration else 3)
+        first_iteration = False
 
 
 async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: int, queue_delay: int, max_steps: int):
@@ -452,7 +468,7 @@ async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: 
                     task=wrapped_prompt,
                     llm=llm,
                     browser=browser_instance,
-                    max_failures=3,
+                    max_failures=5,   # extra tolerance for Render's flaky network
                     use_vision=False,
                 )
                 logger.info("[task:%s] Step 2/5 — Agent created", task_id)
