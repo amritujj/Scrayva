@@ -444,6 +444,11 @@ async def _screenshot_loop(browser, supabase: Client, task_id: str):
                         supabase.table("tasks").update({"screenshot": data_uri}).eq("id", task_id).execute()
                     except Exception as exc:
                         logger.warning("[task:%s] Screenshot update failing (missing column?): %s", task_id, exc)
+                    finally:
+                        # Explicitly free memory to prevent Render OOM
+                        del screenshot_bytes
+                        del b64
+                        del data_uri
 
         except asyncio.CancelledError:
             break
@@ -507,9 +512,13 @@ async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: 
                     "--disable-gpu",
                     "--disable-blink-features=AutomationControlled",
                     "--no-zygote",                           # skip zygote process to avoid double-fork gRPC clash
-                    "--disable-features=VizDisplayCompositor", # reduce subprocess overhead on Render
+                    "--disable-features=VizDisplayCompositor,site-per-process", # site-per-process disables out-of-process iframes saving massive RAM
                     "--mute-audio",
                     "--window-size=1280,720",
+                    "--disable-extensions",                  # Save RAM by not loading extensions
+                    "--disable-software-rasterizer",         # Save RAM by disabling CPU rasterizer
+                    "--disable-default-apps",
+                    "--js-flags=--max-old-space-size=256"    # Limit V8 engine memory
                 ]
                 browser_instance = Browser(
                     config=BrowserConfig(
@@ -751,6 +760,10 @@ async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: 
                         await browser_instance.close()
                     except Exception as b_exc:
                         logger.warning("[task:%s] Could not cleanly close browser loop: %s", task_id, b_exc)
+                
+                # Force Python to clean up Playwright/LangChain memory structures eagerly
+                import gc
+                gc.collect()
 
         if agent_failure_data:
             logger.error("[task:%s] ✗ Final Agent failure diagnostics:\n%s", task_id, agent_failure_data)
