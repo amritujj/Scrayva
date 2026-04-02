@@ -538,13 +538,14 @@ async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: 
                 logger.info("[task:%s] Step 2/5 — Initialising Google Gemini LLM", task_id)
                 from langchain_google_genai import ChatGoogleGenerativeAI
 
-                _model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
+                _model = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
                 _primary_key = _get_next_api_key()
 
                 llm = ChatGoogleGenerativeAI(
                     model=_model,
                     temperature=0.0,
                     google_api_key=_primary_key,
+                    max_retries=0, # Disable LangChain's internal 60s retry block so we can instantly rotate to the next key on a 429 quota failure
                     # Note: do NOT set transport="rest" — REST returns sync GenerateContentResponse
                     # which langchain's async _achat_with_retry cannot await, breaking every call.
                 )
