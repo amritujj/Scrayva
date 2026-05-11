@@ -161,7 +161,7 @@ export default function VoiceReceptionistLanding() {
               <p className="text-slate-400 text-sm leading-relaxed mb-6">Respect HIPAA privacy while handling routine patient bookings, checking doctor availability, and providing clinic directions.</p>
               <ul className="space-y-2 text-sm text-slate-300 font-semibold">
                 <li className="flex items-center gap-2"><svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg> Professional tone</li>
-                <li className="flex items-center gap-2"><svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg> Emegency routing</li>
+                <li className="flex items-center gap-2"><svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg> Emergency routing</li>
               </ul>
             </div>
 
@@ -230,7 +230,7 @@ export default function VoiceReceptionistLanding() {
 
       {/* Footer */}
       <footer className="py-12 text-center text-slate-500 text-sm">
-        <p>© 2026 Scrayva LLC. Models powered by advanced conversational AI endpoints.</p>
+        <p>© 2026 Scrayva Automation Private Limited. Models powered by advanced conversational AI endpoints.</p>
       </footer>
     </div>
   );

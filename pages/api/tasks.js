@@ -46,7 +46,7 @@ export default async function handler(req, res) {
       const title = prompt.length > 80 ? prompt.slice(0, 77) + '...' : prompt;
       const { data: task, error: insertError } = await supabase
         .from('tasks')
-        .insert([{ id: taskId, title, prompt, status: 'queued', user_id: user.id, workspace_id: user.id }])
+        .insert([{ id: taskId, title, prompt, status: 'queued', user_id: user.id, workspace_id: user.id, created_at: new Date().toISOString() }])
         .select()
         .single();
         

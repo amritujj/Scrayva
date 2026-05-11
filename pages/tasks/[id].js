@@ -173,6 +173,8 @@ export default function TaskDetail() {
   const isCompleted = statusLower === 'completed';
   const isFailed = statusLower === 'failed';
   const isCancelled = statusLower === 'cancelled';
+  const isStalemate = (statusLower === 'queued' || statusLower === 'running') && 
+    task.created_at && (Date.now() - new Date(task.created_at).getTime() > 5 * 60 * 1000);
   
   // Map our DB status string to a numeric step
   let CURRENT_STEP = 0;
@@ -215,7 +217,7 @@ export default function TaskDetail() {
             <h1 className="text-xl font-bold text-white tracking-tight truncate max-w-sm">
               {task.prompt}
             </h1>
-            <p className="text-xs text-slate-400 mt-0.5">ID: #{task.id.split('-')[0]} • Started {new Date(task.created_at).toLocaleTimeString()}</p>
+            <p className="text-xs text-slate-400 mt-0.5 whitespace-nowrap">ID: #{task.id.split('-')[0]} • Started {task.created_at ? new Date(task.created_at).toLocaleTimeString() : 'Unknown'}</p>
           </div>
         </div>
 
@@ -267,6 +269,11 @@ export default function TaskDetail() {
           {isCancelled && (
             <div className="mx-3 mb-2 px-3 py-2 bg-orange-500/10 border border-orange-500/20 rounded-lg text-xs text-orange-400 font-medium">
               ⚠ Task was cancelled by user.
+            </div>
+          )}
+          {isStalemate && !isFailed && !isCompleted && !isCancelled && (
+            <div className="mx-3 mb-2 px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-400 font-medium">
+              ⚠ The task seems to be stuck. The core worker process might be heavily queued or restarting. You can cancel and re-run or wait.
             </div>
           )}
           {isFailed && task.error && (
@@ -331,6 +338,11 @@ export default function TaskDetail() {
                     <div className="text-center">
                       <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{statusLower}...</p>
                       <p className="text-xs text-slate-500 mt-2 max-w-sm">The agent is navigating the web and extracting information. This can take a few minutes.</p>
+                      {isStalemate && (
+                        <p className="text-xs text-amber-400 font-medium mt-4 border border-amber-400/20 bg-amber-400/10 p-2.5 rounded-lg">
+                          Worker seems unresponsive. You can click 'Re-run Task' below to try again.
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}

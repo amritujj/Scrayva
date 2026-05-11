@@ -112,9 +112,9 @@ export default function History() {
         </nav>
         <div className="p-4 border-t border-dark-border space-y-4">
           <div className="bg-white/5 rounded-xl p-4">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Compute Usage</span>
-              <span className="text-xs font-bold text-white">{credits !== null ? credits : '-'} Credits</span>
+            <div className="flex justify-between items-center mb-2 gap-2 flex-wrap">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider truncate">Compute Usage</span>
+              <span className="text-[10px] font-bold text-white whitespace-nowrap">{credits !== null ? credits : '-'} Credits</span>
             </div>
             <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
               <div 
@@ -128,8 +128,8 @@ export default function History() {
             <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-sm font-bold">
               {user?.email?.[0]?.toUpperCase() || 'U'}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user?.email || 'My Account'}</p>
+            <div className="flex-1 min-w-0" title={user?.email || 'My Account'}>
+              <p className="text-sm font-medium truncate pr-1">{user?.email || 'My Account'}</p>
               {tier !== 'None' && <p className="text-xs text-dark-muted">{tier} Plan</p>}
               {tier === 'None' && <p className="text-xs text-brand-accent font-semibold animate-pulse">Select a Plan</p>}
             </div>
@@ -180,7 +180,7 @@ export default function History() {
                     <div className="flex items-center gap-3 mb-1.5">
                       <span className="text-xs font-mono text-dark-muted bg-white/5 px-2 py-0.5 rounded">#{task.id.split('-')[0]}</span>
                       {getStatusBadge(task.status)}
-                      <span className="text-xs text-dark-muted">{new Date(task.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      <span className="text-xs text-dark-muted">{task.created_at ? new Date(task.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown Date'}</span>
                     </div>
                     <p className="text-sm text-slate-300 truncate font-medium">{task.prompt}</p>
                     {task.error && <p className="text-xs text-red-400 mt-1 truncate">{task.error}</p>}

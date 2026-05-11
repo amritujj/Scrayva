@@ -245,7 +245,7 @@ async def lifespan(app: FastAPI):
                     # health checker gets no response → Render kills the service.
                     import subprocess as _sp
                     _install_proc = await asyncio.create_subprocess_exec(
-                        "python", "-m", "playwright", "install", "chromium-headless-shell",
+                        "python", "-m", "playwright", "install", "chromium",
                         stdout=_sp.PIPE,
                         stderr=_sp.STDOUT,
                     )
@@ -662,7 +662,7 @@ async def _background_run_agent(task_id: str, prompt: str, tier: str, priority: 
                                             fallback_text = str(candidate).strip()
                                             break
 
-                            if not fallback_text:
+                            if not fallback_text and history_list:
                                 last_step = history_list[-1]
                                 dump_str = str(last_step.model_dump() if hasattr(last_step, "model_dump") else last_step)
                                 fallback_text = dump_str[:4000]
@@ -1041,7 +1041,7 @@ async def debug_agent(request: DebugAgentRequest):
         _debug_initial_key = [k.strip() for k in _debug_raw_keys.split(",") if k.strip()][0] if _debug_raw_keys else ""
         
         llm = ChatGoogleGenerativeAI(
-            model=os.environ.get("GEMINI_MODEL", "gemini-2.5-flash"), 
+            model=os.environ.get("GEMINI_MODEL", "gemini-2.0-flash"), 
             temperature=0.0,
             google_api_key=_debug_initial_key
         )
