@@ -1,24 +1,25 @@
+// ==========================================
+// FILE: pages/voice-setup.js
+// ==========================================
+
 import Head from 'next/head';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import Toast, { useToast } from '../components/Toast';
+import { ArrowLeft, Loader2, CheckCircle2, Mic, FileJson, Server } from 'lucide-react';
 
 export default function VoiceSetup() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [user, setUser] = useState(null);
   
-  // Step 1: Business Details
   const [businessName, setBusinessName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [services, setServices] = useState('');
-
-  // Step 2: Language & Voice
   const [language, setLanguage] = useState('English');
-  
-  // Step 3: Working Hours & Responses
   const [workingHours, setWorkingHours] = useState('09:00-18:00');
   
   const router = useRouter();
@@ -28,25 +29,25 @@ export default function VoiceSetup() {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (user) {
         setUser(user);
-        // Pre-fill if agent exists
-        supabase.auth.getSession().then(({ data: { session } }) => {
-          fetch('/api/voice/get-agent', {
-            headers: { Authorization: `Bearer ${session?.access_token || ''}` }
-          }).then(res => res.json()).then(data => {
-            if (data && !data.error) {
+        const sessionToken = (await supabase.auth.getSession()).data.session?.access_token;
+        if (sessionToken) {
+          fetch('/api/voice/get-agent', { headers: { Authorization: `Bearer ${sessionToken}` } })
+            .then(res => res.json())
+            .then(data => {
+              if (data && !data.error) {
                 setBusinessName(data.business_name || '');
                 setPhoneNumber(data.phone_number || '');
                 setServices(data.services || '');
                 setLanguage(data.language || 'English');
                 setWorkingHours(data.working_hours || '09:00-18:00');
-            }
-          }).catch(err => console.error(err));
-        });
+              }
+            }).catch(err => console.error(err));
+        }
       } else {
         router.push('/login');
       }
     });
-  }, []);
+  }, [router]);
 
   const handleNext = () => setStep(prev => prev + 1);
   const handlePrev = () => setStep(prev => prev - 1);
@@ -58,32 +59,24 @@ export default function VoiceSetup() {
       const token = sessionData?.data?.session?.access_token;
       
       if (!token) {
-         showToast('Auth session expired. Please log in again.', 'error');
-         setIsSubmitting(false);
-         return;
+         showToast('Auth session expired.', 'error');
+         setIsSubmitting(false); return;
       }
       
       const payload = { business_name: businessName, phone_number: phoneNumber, language, working_hours: workingHours, services };
       
       const res = await fetch('/api/voice/create-agent', {
         method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(payload)
       });
       
       if (res.ok) {
-        showToast('Agent deployed successfully!', 'success');
+        showToast('Acoustic Model deployed!', 'success');
         setTimeout(() => router.push('/voice-dashboard'), 1500);
       } else {
-        let errStr = 'Failed to deploy agent';
-        try {
-          const err = await res.json();
-          errStr = typeof err.error === 'object' ? JSON.stringify(err.error) : (err.error || errStr);
-        } catch(e) {}
-        showToast(errStr, 'error');
+        const err = await res.json();
+        showToast(err.error || 'Failed to deploy agent', 'error');
       }
     } catch (e) {
       showToast(`Network block: ${e.message}`, 'error');
@@ -91,109 +84,173 @@ export default function VoiceSetup() {
     setIsSubmitting(false);
   };
 
-  return (
-    <div className="min-h-screen bg-[#0A0A0B] text-white flex flex-col items-center justify-center p-4">
-      <Head><title>Setup Voice Agent | Scrayva</title></Head>
-      
-      <Link href="/voice-dashboard" className="absolute top-6 left-6 flex items-center gap-2 text-dark-muted hover:text-white transition-colors">
-        &larr; <span className="text-sm font-semibold">Back to Dashboard</span>
-      </Link>
-      
-      <div className="w-full max-w-2xl bg-[#121214] border border-white/5 rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden">
-        {/* Progress Bar */}
-        <div className="w-full h-1.5 bg-white/5 rounded-full mb-10 overflow-hidden">
-          <div className="h-full bg-indigo-500 rounded-full transition-all duration-500" style={{ width: `${(step / 3) * 100}%` }} />
-        </div>
-        
-        {step === 1 && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h2 className="text-2xl font-bold mb-2">Step 1: Business Profile</h2>
-            <p className="text-dark-muted mb-8 text-sm">Let your AI know who it's representing.</p>
-            
-            <div className="space-y-5">
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Business Name</label>
-                <input type="text" value={businessName} onChange={e => setBusinessName(e.target.value)} placeholder="e.g. Bella Salon & Spa" className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-slate-200 transition-all" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Twilio Phone Number (Optional)</label>
-                <input type="text" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} placeholder="+1 234 567 8900" className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-slate-200 transition-all" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Services & Pricing</label>
-                <textarea rows="3" value={services} onChange={e => setServices(e.target.value)} placeholder="e.g. Haircut ($30, 45 mins), Coloring ($80, 2 hours)..." className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-slate-200 transition-all resize-none" />
-                <p className="text-[10px] text-dark-muted mt-2">The AI reads this directly to answer customer questions.</p>
-              </div>
-              <button disabled={!businessName} onClick={handleNext} className="w-full mt-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl font-bold transition-all flex justify-center items-center">
-                Next Step &rarr;
-              </button>
-            </div>
-          </div>
-        )}
-        
-        {step === 2 && (
-          <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-            <h2 className="text-2xl font-bold mb-2">Step 2: Voice & Language</h2>
-            <p className="text-dark-muted mb-8 text-sm">Choose how the AI sounds on the phone.</p>
-            
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <button onClick={() => setLanguage('English')} className={`p-6 rounded-2xl border-2 text-center transition-all ${language === 'English' ? 'border-indigo-500 bg-indigo-500/10' : 'border-white/5 bg-black/20 hover:border-white/20'}`}>
-                <span className="text-3xl mb-3 block">🇺🇸</span>
-                <span className="font-bold text-sm block">English (Saaras)</span>
-              </button>
-              <button onClick={() => setLanguage('Hindi')} className={`p-6 rounded-2xl border-2 text-center transition-all ${language === 'Hindi' ? 'border-indigo-500 bg-indigo-500/10' : 'border-white/5 bg-black/20 hover:border-white/20'}`}>
-                <span className="text-3xl mb-3 block">🇮🇳</span>
-                <span className="font-bold text-sm block">Hindi (Bulbul)</span>
-              </button>
-            </div>
-            
-            <div className="flex gap-4 mt-8">
-              <button onClick={handlePrev} className="px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold transition-all w-1/3">
-                Back
-              </button>
-              <button onClick={handleNext} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all flex-1">
-                Next Step &rarr;
-              </button>
-            </div>
-          </div>
-        )}
-        
-        {step === 3 && (
-          <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-            <h2 className="text-2xl font-bold mb-2">Step 3: Scheduling</h2>
-            <p className="text-dark-muted mb-8 text-sm">When should the AI book appointments for?</p>
-            
-            <div className="space-y-6">
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Working Hours</label>
-                <input type="text" value={workingHours} onChange={e => setWorkingHours(e.target.value)} placeholder="e.g. Monday-Friday 09:00-18:00" className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-slate-200 transition-all" />
-              </div>
-              
-              <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
-                <h4 className="flex items-center gap-2 text-sm font-bold text-indigo-400 mb-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  Ready to Deploy!
-                </h4>
-                <p className="text-xs text-indigo-300 leading-relaxed">
-                  Your AI ({language}) is ready. Once deployed, any calls routed through Twilio to your webhook URL will automatically stream directly to the Sarvam AI endpoints and book slots into your dashboard calendar.
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex gap-4 mt-8">
-              <button onClick={handlePrev} disabled={isSubmitting} className="px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold transition-all w-1/3 disabled:opacity-50">
-                Back
-              </button>
-              <button onClick={handleSubmit} disabled={isSubmitting} className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white shadow-[0_0_20px_rgba(22,163,74,0.3)] rounded-xl font-bold transition-all flex-1 flex justify-center items-center gap-2">
-                {isSubmitting ? (
-                  <><svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg> Deploying...</>
-                ) : 'Deploy Voice Agent 🚀'}
-              </button>
-            </div>
-          </div>
-        )}
+  const slideVariants = {
+    enter: { x: 50, opacity: 0 },
+    center: { x: 0, opacity: 1 },
+    exit: { x: -50, opacity: 0 }
+  };
 
+  return (
+    <div className="min-h-screen bg-black text-white flex flex-col md:flex-row font-sans selection:bg-[#0ea5e9]/30 overflow-hidden">
+      <Head><title>Initialize Voice Model | Scrayva</title></Head>
+      
+      {/* ─── Left Side: Form Area ─── */}
+      <div className="w-full md:w-[55%] lg:w-[45%] flex flex-col relative h-screen overflow-y-auto">
+        <header className="p-6 md:p-10 pb-0">
+          <Link href="/voice-dashboard" className="inline-flex items-center gap-2 text-slate-500 hover:text-white transition-colors group text-sm font-semibold">
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Cancel Setup
+          </Link>
+        </header>
+
+        <div className="flex-1 flex flex-col justify-center p-6 md:p-10 max-w-xl mx-auto w-full">
+          {/* Progress Indicator */}
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-bold uppercase tracking-widest text-[#0ea5e9]">Phase 0{step}</span>
+              <span className="text-xs font-mono text-slate-500">{Math.round((step/3)*100)}% Complete</span>
+            </div>
+            <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+              <motion.div className="h-full bg-[#0ea5e9] rounded-full shadow-[0_0_10px_#0ea5e9]" initial={{ width: 0 }} animate={{ width: `${(step / 3) * 100}%` }} transition={{ duration: 0.5 }} />
+            </div>
+          </div>
+
+          <div className="relative min-h-[350px]">
+            <AnimatePresence mode="wait">
+              
+              {/* STEP 1 */}
+              {step === 1 && (
+                <motion.div key="step1" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }} className="absolute inset-0">
+                  <h2 className="text-3xl font-bold mb-3 tracking-tight">Entity Identity</h2>
+                  <p className="text-slate-400 mb-8 text-sm">Define the business parameters the AI will represent.</p>
+                  
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Business Name</label>
+                      <input type="text" value={businessName} onChange={e => setBusinessName(e.target.value)} placeholder="e.g. Scrayva Labs" className="w-full bg-[#09090b] border border-white/10 rounded-xl p-4 text-sm focus:border-[#0ea5e9]/50 focus:ring-1 focus:ring-[#0ea5e9]/50 outline-none transition-all placeholder:text-slate-600" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between">
+                        <span>Twilio Target Route</span> <span className="text-slate-600">Optional</span>
+                      </label>
+                      <input type="text" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} placeholder="+1 234 567 8900" className="w-full bg-[#09090b] border border-white/10 rounded-xl p-4 text-sm focus:border-[#0ea5e9]/50 focus:ring-1 focus:ring-[#0ea5e9]/50 outline-none transition-all placeholder:text-slate-600 font-mono" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Context / Services</label>
+                      <textarea rows="3" value={services} onChange={e => setServices(e.target.value)} placeholder="Provide context the AI will use to answer queries..." className="w-full bg-[#09090b] border border-white/10 rounded-xl p-4 text-sm focus:border-[#0ea5e9]/50 focus:ring-1 focus:ring-[#0ea5e9]/50 outline-none transition-all placeholder:text-slate-600 resize-none" />
+                    </div>
+                    <button disabled={!businessName} onClick={handleNext} className="w-full py-4 bg-white hover:bg-slate-200 disabled:opacity-50 text-black rounded-xl font-bold transition-all shadow-lg active:scale-95">
+                      Compile Identity &rarr;
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* STEP 2 */}
+              {step === 2 && (
+                <motion.div key="step2" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }} className="absolute inset-0">
+                  <h2 className="text-3xl font-bold mb-3 tracking-tight">Acoustic Model</h2>
+                  <p className="text-slate-400 mb-8 text-sm">Select the core LLM voice engine for inference.</p>
+                  
+                  <div className="grid grid-cols-2 gap-4 mb-8">
+                    <button onClick={() => setLanguage('English')} className={`p-6 rounded-2xl border text-left transition-all ${language === 'English' ? 'border-[#0ea5e9] bg-[#0ea5e9]/10' : 'border-white/10 bg-[#09090b] hover:border-white/30'}`}>
+                      <Mic className={`w-8 h-8 mb-4 ${language === 'English' ? 'text-[#0ea5e9]' : 'text-slate-500'}`} />
+                      <span className="font-bold text-white block mb-1">English Core</span>
+                      <span className="text-xs text-slate-500">Saaras-v2</span>
+                    </button>
+                    <button onClick={() => setLanguage('Hindi')} className={`p-6 rounded-2xl border text-left transition-all ${language === 'Hindi' ? 'border-[#0ea5e9] bg-[#0ea5e9]/10' : 'border-white/10 bg-[#09090b] hover:border-white/30'}`}>
+                      <Mic className={`w-8 h-8 mb-4 ${language === 'Hindi' ? 'text-[#0ea5e9]' : 'text-slate-500'}`} />
+                      <span className="font-bold text-white block mb-1">Hindi Core</span>
+                      <span className="text-xs text-slate-500">Bulbul-v1</span>
+                    </button>
+                  </div>
+                  
+                  <div className="flex gap-4">
+                    <button onClick={handlePrev} className="px-6 py-4 bg-[#09090b] border border-white/10 hover:bg-white/5 text-white rounded-xl font-bold transition-all w-1/3">Back</button>
+                    <button onClick={handleNext} className="px-6 py-4 bg-white hover:bg-slate-200 text-black rounded-xl font-bold transition-all flex-1 shadow-lg active:scale-95">Set Model &rarr;</button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* STEP 3 */}
+              {step === 3 && (
+                <motion.div key="step3" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }} className="absolute inset-0">
+                  <h2 className="text-3xl font-bold mb-3 tracking-tight">Deployment Rules</h2>
+                  <p className="text-slate-400 mb-8 text-sm">Define operational parameters for the agent.</p>
+                  
+                  <div className="space-y-8">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Schedule (Cron)</label>
+                      <input type="text" value={workingHours} onChange={e => setWorkingHours(e.target.value)} placeholder="e.g. Mon-Fri 09:00-18:00" className="w-full bg-[#09090b] border border-white/10 rounded-xl p-4 text-sm focus:border-[#0ea5e9]/50 focus:ring-1 focus:ring-[#0ea5e9]/50 outline-none transition-all placeholder:text-slate-600 font-mono" />
+                    </div>
+                    
+                    <div className="p-5 bg-[#0ea5e9]/10 border border-[#0ea5e9]/20 rounded-xl">
+                      <h4 className="flex items-center gap-2 text-sm font-bold text-[#0ea5e9] mb-2">
+                        <CheckCircle2 className="w-4 h-4" /> Ready for Orchestration
+                      </h4>
+                      <p className="text-xs text-[#0ea5e9]/80 leading-relaxed">
+                        Parameters locked. Clicking deploy will push this model configuration to the Scrayva edge nodes. Twilio webhooks will instantly begin routing via this schema.
+                      </p>
+                    </div>
+                    
+                    <div className="flex gap-4">
+                      <button onClick={handlePrev} disabled={isSubmitting} className="px-6 py-4 bg-[#09090b] border border-white/10 hover:bg-white/5 disabled:opacity-50 text-white rounded-xl font-bold transition-all w-1/3">Back</button>
+                      <button onClick={handleSubmit} disabled={isSubmitting} className="px-6 py-4 bg-[#0ea5e9] hover:bg-[#0284c7] text-white rounded-xl font-bold transition-all flex-1 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(14,165,233,0.3)] active:scale-95">
+                        {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Server className="w-5 h-5" />}
+                        {isSubmitting ? 'Deploying Model...' : 'Push to Production'}
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+            </AnimatePresence>
+          </div>
+        </div>
       </div>
+
+      {/* ─── Right Side: Terminal Preview (Hidden on Mobile) ─── */}
+      <div className="hidden md:flex flex-1 bg-[#050505] border-l border-white/5 relative p-10 flex-col justify-center">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.05),transparent_50%)]" />
+        
+        <div className="w-full max-w-lg mx-auto bg-[#09090b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden relative">
+          {/* Terminal Header */}
+          <div className="px-4 py-3 border-b border-white/10 bg-[#18181b] flex items-center gap-2">
+            <div className="flex gap-1.5 mr-4">
+              <div className="w-3 h-3 rounded-full bg-slate-700" />
+              <div className="w-3 h-3 rounded-full bg-slate-700" />
+              <div className="w-3 h-3 rounded-full bg-slate-700" />
+            </div>
+            <FileJson className="w-3.5 h-3.5 text-slate-500" />
+            <span className="text-xs font-mono text-slate-500">model_payload.json</span>
+          </div>
+          
+          {/* Terminal Content */}
+          <div className="p-6 font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto text-[#0ea5e9] bg-[#050505]">
+            <pre>
+<span className="text-slate-500">{"{"}</span>
+<br/>  <span className="text-[#38bdf8]">"entity_config"</span>: <span className="text-slate-500">{"{"}</span>
+<br/>    <span className="text-[#38bdf8]">"name"</span>: <span className="text-emerald-400">"{businessName || 'undefined'}"</span>,
+<br/>    <span className="text-[#38bdf8]">"route_id"</span>: <span className="text-emerald-400">"{phoneNumber || 'pending'}"</span>,
+<br/>    <span className="text-[#38bdf8]">"context"</span>: <span className="text-emerald-400">"{services ? services.substring(0, 20) + '...' : 'undefined'}"</span>
+<br/>  <span className="text-slate-500">{"}"}</span>,
+<br/>  <span className="text-[#38bdf8]">"acoustic_model"</span>: <span className="text-emerald-400">"{language === 'English' ? 'saaras-v2-en' : 'bulbul-v1-hi'}"</span>,
+<br/>  <span className="text-[#38bdf8]">"orchestration"</span>: <span className="text-slate-500">{"{"}</span>
+<br/>    <span className="text-[#38bdf8]">"cron"</span>: <span className="text-emerald-400">"{workingHours || '00:00-00:00'}"</span>,
+<br/>    <span className="text-[#38bdf8]">"status"</span>: <span className="text-emerald-400">"{step === 3 ? 'ready_for_deployment' : 'configuring'}"</span>
+<br/>  <span className="text-slate-500">{"}"}</span>
+<br/><span className="text-slate-500">{"}"}</span>
+            </pre>
+            
+            {step === 3 && isSubmitting && (
+              <div className="mt-4 pt-4 border-t border-white/10 text-emerald-400 animate-pulse">
+                &gt; Pushing payload to edge nodes...<br/>
+                &gt; Awaiting 200 OK...
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       {toast && <Toast {...toast} onClose={() => showToast(null)} />}
     </div>
   );
