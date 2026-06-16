@@ -16,6 +16,7 @@ export default function WorkflowBuilder() {
   const [prompt, setPrompt] = useState('');
   const [schedule, setSchedule] = useState('');
   const [destination, setDestination] = useState('Email Digest');
+  const [webhookUrl, setWebhookUrl] = useState('');
 
   const { toast, showToast } = useToast();
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function WorkflowBuilder() {
     });
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!workflowName.trim() || !prompt.trim() || !schedule.trim()) {
       showToast('Please provide a name, prompt, and schedule.', 'error');
@@ -41,27 +42,29 @@ export default function WorkflowBuilder() {
     setIsSubmitting(true);
 
     const newWorkflow = {
-      id: `wf-${Date.now()}`,
+      user_id: user.id,
       title: workflowName,
-      desc: workflowDesc || 'Custom workflow',
+      description: workflowDesc || 'Custom workflow',
       prompt: prompt,
       status: 'active',
-      lastRun: 'Never',
-      lastRunMs: 0,
+      last_run: 'Never',
+      last_run_ms: 0,
       schedule: schedule,
-      destination: destination
+      destination: destination,
+      webhook_url: destination === 'Webhook' ? webhookUrl : null
     };
 
-    const storageKey = user ? `scrayva_workflows_${user.id}` : 'scrayva_workflows_guest';
-    const existing = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    existing.push(newWorkflow);
-    localStorage.setItem(storageKey, JSON.stringify(existing));
+    const { error } = await supabase.from('workflows').insert([newWorkflow]);
 
-    setTimeout(() => {
+    if (error) {
+      showToast(error.message, 'error');
       setIsSubmitting(false);
-      showToast('Workflow created successfully!', 'success');
-      setTimeout(() => router.push('/workflows'), 1000);
-    }, 500);
+      return;
+    }
+
+    setIsSubmitting(false);
+    showToast('Workflow created successfully!', 'success');
+    setTimeout(() => router.push('/workflows'), 1000);
   };
 
   return (
@@ -188,6 +191,21 @@ export default function WorkflowBuilder() {
                   </select>
                 </div>
               </div>
+
+              {destination === 'Webhook' && (
+                <div className="animate-in fade-in slide-in-from-top-4 duration-300">
+                  <label className="block text-sm font-bold text-slate-300 uppercase tracking-wider mb-2">Webhook URL</label>
+                  <input
+                    type="url"
+                    value={webhookUrl}
+                    onChange={(e) => setWebhookUrl(e.target.value)}
+                    placeholder="https://your-server.com/webhook"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                    required
+                  />
+                  <p className="text-xs text-slate-500 mt-2">Data will be POSTed to this URL as JSON.</p>
+                </div>
+              )}
             </div>
 
             <div className="pt-6 border-t border-slate-800 flex justify-end gap-4">

@@ -196,8 +196,22 @@ export default function TaskDetail() {
       tableRows = [task.result];
       tableHeaders = Object.keys(task.result);
     } else if (typeof task.result === 'string') {
-      tableRows = [{ output: task.result }];
-      tableHeaders = ['output'];
+      try {
+        const parsed = JSON.parse(task.result);
+        if (Array.isArray(parsed)) {
+            tableRows = parsed;
+            if (tableRows.length > 0 && typeof tableRows[0] === 'object') tableHeaders = Object.keys(tableRows[0]);
+        } else if (typeof parsed === 'object' && parsed !== null) {
+            tableRows = [parsed];
+            tableHeaders = Object.keys(parsed);
+        } else {
+            tableRows = [{ output: task.result }];
+            tableHeaders = ['output'];
+        }
+      } catch (e) {
+        tableRows = [{ output: task.result }];
+        tableHeaders = ['output'];
+      }
     }
   }
 

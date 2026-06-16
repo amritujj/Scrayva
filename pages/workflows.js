@@ -69,7 +69,7 @@ export default function Workflows() {
   useEffect(() => {
     const tick = setInterval(() => {
       workflowsRef.current.forEach(wf => {
-        if (wf.status === 'active' && shouldRun(wf.schedule, wf.lastRunMs)) {
+        if (wf.status === 'active' && shouldRun(wf.schedule, wf.last_run_ms || wf.lastRunMs)) {
            if (handleRunNowRef.current) handleRunNowRef.current(wf);
         }
       });
@@ -106,21 +106,27 @@ export default function Workflows() {
         if (userTier === 'Ultimate') initialCredits = 200;
         setCredits(user.user_metadata?.credits ?? initialCredits);
 
-        const storageKey = `scrayva_workflows_${user.id}`;
-        let savedWorkflows = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        
-        // Seed initial data if empty
-        if (savedWorkflows.length === 0) {
-          savedWorkflows = INIT_WORKFLOWS.map(w => ({
-            ...w,
-            id: `wf-${Math.random().toString(36).substr(2, 9)}`,
-            lastRunMs: 0,
-            lastRun: 'Never'
-          }));
-          localStorage.setItem(storageKey, JSON.stringify(savedWorkflows));
-        }
-        
-        setWorkflows(savedWorkflows);
+        const fetchWorkflows = async () => {
+          const { data, error } = await supabase.from('workflows').select('*').order('created_at', { ascending: false });
+          if (data && data.length > 0) {
+            setWorkflows(data);
+          } else {
+            const seed = INIT_WORKFLOWS.map(w => ({
+              user_id: user.id,
+              title: w.title,
+              description: w.desc,
+              prompt: w.desc,
+              status: w.status,
+              schedule: w.schedule,
+              destination: w.destination,
+              last_run: 'Never',
+              last_run_ms: 0
+            }));
+            const { data: insertedData } = await supabase.from('workflows').insert(seed).select();
+            if (insertedData) setWorkflows(insertedData);
+          }
+        };
+        fetchWorkflows();
 
         fetchTasks();
         interval = setInterval(fetchTasks, 3000);
@@ -140,13 +146,13 @@ export default function Workflows() {
         showToast(next === 'active' ? `"${w.title}" resumed.` : `"${w.title}" paused.`, next === 'active' ? 'success' : 'info');
         
         const activatedNow = { ...w, status: next };
-        if (next === 'active' && shouldRun(activatedNow.schedule, activatedNow.lastRunMs)) {
+        if (next === 'active' && shouldRun(activatedNow.schedule, activatedNow.last_run_ms || activatedNow.lastRunMs)) {
            if (handleRunNowRef.current) setTimeout(() => handleRunNowRef.current(activatedNow), 100);
         }
         
+        supabase.from('workflows').update({ status: next }).eq('id', w.id).then();
         return activatedNow;
       });
-      if (user) localStorage.setItem(`scrayva_workflows_${user.id}`, JSON.stringify(updated));
       return updated;
     });
   };
@@ -154,7 +160,7 @@ export default function Workflows() {
   const handleScheduleChange = (id, value) => {
     setWorkflows((prev) => {
       const updated = prev.map((w) => w.id === id ? { ...w, schedule: value } : w);
-      if (user) localStorage.setItem(`scrayva_workflows_${user.id}`, JSON.stringify(updated));
+      supabase.from('workflows').update({ schedule: value }).eq('id', id).then();
       return updated;
     });
   };
@@ -193,16 +199,20 @@ export default function Workflows() {
         setWorkflows((prev) => {
           const updated = prev.map((item) => {
             if (item.id === w.id) {
-              return { 
+              const newData = { 
                 ...item, 
-                lastRunId: task.id, 
-                lastRun: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                lastRunMs: Date.now()
+                last_run_id: task.id, 
+                last_run: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                last_run_ms: Date.now()
               };
+              supabase.from('workflows').update({
+                  last_run: newData.last_run,
+                  last_run_ms: newData.last_run_ms
+              }).eq('id', w.id).then();
+              return newData;
             }
             return item;
           });
-          if (user) localStorage.setItem(`scrayva_workflows_${user.id}`, JSON.stringify(updated));
           return updated;
         });
 
@@ -309,21 +319,34 @@ export default function Workflows() {
                     </span>
                   </div>
                   <p className="text-slate-400 text-sm line-clamp-1 mb-4">{wf.prompt || wf.desc}</p>
-                  <div className="flex flex-wrap gap-3 text-xs items-center">
-                    <span className="bg-slate-900/50 px-3 py-1.5 rounded-full text-slate-500">Last run: {wf.lastRun}</span>
-                    {wf.lastRunId && taskStatuses[wf.lastRunId] && (
-                      <span className={`px-2 py-1 font-bold rounded uppercase tracking-wider ${
-                        taskStatuses[wf.lastRunId].toLowerCase() === 'completed' ? 'bg-green-500/10 text-green-400' :
-                        taskStatuses[wf.lastRunId].toLowerCase() === 'failed' ? 'bg-red-500/10 text-red-400' :
-                        'bg-sky-500/10 text-sky-400 animate-pulse flex items-center gap-1'
-                      }`}>
-                        {['queued', 'running'].includes(taskStatuses[wf.lastRunId].toLowerCase()) && <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>}
-                        {taskStatuses[wf.lastRunId]}
+                  <div className="flex flex-wrap items-center gap-3 text-xs mt-3 lg:mt-0">
+                    <span className="bg-slate-900/50 px-3 py-1.5 rounded-full text-slate-500">Last run: {wf.last_run || wf.lastRun}</span>
+                    {(wf.last_run_id || wf.lastRunId) && taskStatuses[(wf.last_run_id || wf.lastRunId)] && (
+                      <span className={`px-2 py-1 rounded font-bold uppercase tracking-widest text-[10px] flex items-center gap-1.5
+                        ${taskStatuses[(wf.last_run_id || wf.lastRunId)].toLowerCase() === 'completed' ? 'bg-green-500/10 text-green-400' :
+                        taskStatuses[(wf.last_run_id || wf.lastRunId)].toLowerCase() === 'failed' ? 'bg-red-500/10 text-red-400' :
+                        'bg-sky-500/10 text-sky-400'}`}
+                      >
+                        {['queued', 'running'].includes(taskStatuses[(wf.last_run_id || wf.lastRunId)].toLowerCase()) && <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>}
+                        {taskStatuses[(wf.last_run_id || wf.lastRunId)]}
                       </span>
                     )}
-                    {wf.lastRunId && (
-                      <Link href={`/tasks/${wf.lastRunId}`} className="text-indigo-400 hover:text-indigo-300 transition-colors font-semibold">
-                        View Results &rarr;
+                  </div>
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-800">
+                  <div className="flex-1 flex gap-2">
+                    <button onClick={() => toggleStatus(wf.id)} className={`px-5 py-2.5 rounded-lg font-bold text-sm transition-all flex items-center gap-2 ${wf.status === 'active' ? 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'}`}>
+                      {wf.status === 'active' ? 'Pause' : 'Resume'}
+                    </button>
+                    <button onClick={() => { if (handleRunNowRef.current) handleRunNowRef.current(wf); }} disabled={wf.status !== 'active'} className="px-5 py-2.5 rounded-lg font-bold text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                      Run Now
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    {(wf.last_run_id || wf.lastRunId) && (
+                      <Link href={`/tasks/${(wf.last_run_id || wf.lastRunId)}`} className="text-indigo-400 hover:text-indigo-300 transition-colors font-semibold">
+                        View Log &rarr;
                       </Link>
                     )}
                     <button onClick={() => handleRunNow(wf)}

@@ -42,13 +42,30 @@ export default function Settings() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data?.user) setUser(data.user);
+      if (data?.user) {
+        setUser(data.user);
+        if (data.user.user_metadata?.custom_api_key) {
+          setApiKey(data.user.user_metadata.custom_api_key);
+        }
+        if (data.user.user_metadata?.primary_model) {
+          setModelChoice(data.user.user_metadata.primary_model);
+        }
+      }
     });
   }, []);
 
-  const handleSaveAPI = (e) => {
+  const handleSaveAPI = async (e) => {
     e.preventDefault();
-    showToast('API settings saved successfully!', 'success');
+    if (!user) return;
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: { custom_api_key: apiKey, primary_model: modelChoice }
+      });
+      if (error) throw error;
+      showToast('API settings saved securely!', 'success');
+    } catch (err) {
+      showToast(`Error: ${err.message}`, 'error');
+    }
   };
 
   const triggerUpgrade = (tier) => {
@@ -136,8 +153,8 @@ export default function Settings() {
               <div className="p-6 sm:p-8">
                 <h2 className="text-xl font-semibold text-white mb-6">Account Profile</h2>
                 {user ? (
-                  <div className="space-y-6 max-w-lg">
-                    <div className="bg-scrayva-dark p-4 flex items-center gap-4 rounded-xl border border-scrayva-dark-border">
+                  <div className="space-y-6 w-full max-w-3xl">
+                    <div className="bg-scrayva-dark p-4 flex items-center gap-4 rounded-xl border border-scrayva-dark-border flex-wrap lg:flex-nowrap">
                       <div className="w-16 h-16 rounded-full bg-scrayva-purple flex items-center justify-center text-2xl font-bold text-white uppercase">
                         {user.email?.[0]}
                       </div>

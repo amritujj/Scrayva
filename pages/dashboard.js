@@ -150,7 +150,16 @@ export default function Dashboard() {
     if (s === 'completed') return <span className="px-2 py-1 text-[10px] font-bold rounded border bg-green-500/10 text-green-400 border-green-500/20 uppercase tracking-wider">Completed</span>;
     if (s === 'failed')    return <span className="px-2 py-1 text-[10px] font-bold rounded border bg-red-500/10 text-red-400 border-red-500/20 uppercase tracking-wider">Failed</span>;
     if (s === 'running')   return <span className="px-2 py-1 text-[10px] font-bold rounded border bg-sky-500/10 text-sky-400 border-sky-500/20 uppercase tracking-wider flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>Running</span>;
-    if (s === 'queued')    return <span className="px-2 py-1 text-[10px] font-bold rounded border bg-amber-500/10 text-amber-400 border-amber-500/20 uppercase tracking-wider flex items-center gap-1" title="Waiting in queue — Free tier tasks start after a short delay"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>Queued</span>;
+    if (s === 'queued') return (
+      <span className="group relative">
+        <span className="px-2 py-1 text-[10px] font-bold rounded border bg-amber-500/10 text-amber-400 border-amber-500/20 uppercase tracking-wider flex items-center gap-1 cursor-help">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>Queued
+        </span>
+        <span className="hidden group-hover:block group-active:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[180px] text-center bg-slate-800 border border-slate-700 text-[10px] leading-tight text-slate-300 p-2 rounded-lg shadow-xl z-50 pointer-events-none">
+          Waiting in queue — Free tier tasks start after a short delay
+        </span>
+      </span>
+    );
     return <span className="px-2 py-1 text-[10px] font-bold rounded border bg-slate-500/10 text-slate-400 border-slate-500/20 uppercase tracking-wider">{s}</span>;
   };
 

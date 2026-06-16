@@ -29,9 +29,10 @@ export default function VoiceSetup() {
       if (user) {
         setUser(user);
         // Pre-fill if agent exists
-        fetch('/api/voice/get-agent', {
-          headers: { Authorization: `Bearer ${user.role || (supabase.auth.getSession ? (await supabase.auth.getSession()).data.session?.access_token : '')}` }
-        }).then(res => res.json()).then(data => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          fetch('/api/voice/get-agent', {
+            headers: { Authorization: `Bearer ${session?.access_token || ''}` }
+          }).then(res => res.json()).then(data => {
             if (data && !data.error) {
                 setBusinessName(data.business_name || '');
                 setPhoneNumber(data.phone_number || '');
@@ -39,7 +40,8 @@ export default function VoiceSetup() {
                 setLanguage(data.language || 'English');
                 setWorkingHours(data.working_hours || '09:00-18:00');
             }
-        }).catch(err => console.error(err));
+          }).catch(err => console.error(err));
+        });
       } else {
         router.push('/login');
       }

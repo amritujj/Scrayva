@@ -1,209 +1,218 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { supabase } from '../lib/supabase';
-import { handleRazorpayCheckout } from '../lib/razorpay';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Check, X, Zap } from 'lucide-react';
 import Navbar from '../components/Navbar';
 
+const pricingPlans = [
+  {
+    name: 'Free',
+    description: 'Perfect for exploring and small one-off tasks.',
+    monthlyPrice: 0,
+    yearlyPrice: 0,
+    credits: 5,
+    features: [
+      '5 AI Agent Credits / month',
+      '15 Max Steps per execution',
+      '30s Queue Delay (Shared compute)',
+      'Standard Web Extraction',
+      'Community Support'
+    ],
+    missingFeatures: ['Zero Queue Delay', 'Priority Processing', 'Voice Agent Creation'],
+    buttonText: 'Start for Free',
+    buttonLink: '/signup',
+    isPopular: false,
+  },
+  {
+    name: 'Pro',
+    description: 'For professionals and freelancers scaling their research.',
+    monthlyPrice: 399,
+    yearlyPrice: 3999,
+    credits: 60,
+    features: [
+      '60 AI Agent Credits / month',
+      '15 Max Steps per execution',
+      'Zero Queue Delay (Dedicated compute)',
+      'Advanced Semantic Extraction',
+      'Basic Voice Agent Access',
+      'Email Support'
+    ],
+    missingFeatures: ['Priority Processing', 'Custom Integrations'],
+    buttonText: 'Upgrade to Pro',
+    buttonLink: '/login?redirect=billing',
+    isPopular: true,
+  },
+  {
+    name: 'Ultimate',
+    description: 'For teams and heavy users needing autonomous scale.',
+    monthlyPrice: 999,
+    yearlyPrice: 9999,
+    credits: 200,
+    features: [
+      '200 AI Agent Credits / month',
+      '20 Max Steps per execution',
+      'Highest Priority Processing',
+      'Unlimited Voice Agent Creation',
+      'Custom Output Schemas (JSON)',
+      '24/7 Priority Support',
+      'Early access to new models'
+    ],
+    missingFeatures: [],
+    buttonText: 'Get Ultimate',
+    buttonLink: '/login?redirect=billing',
+    isPopular: false,
+  }
+];
+
 export default function Pricing() {
-  const router = useRouter();
-  const [user, setUser] = useState(null);
-  const [isYearly, setIsYearly] = useState(true);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUser(session?.user || null);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handlePlanClick = (planName) => {
-    if (!user) {
-      router.push('/login?redirect=/pricing');
-      return;
-    }
-    
-    if (planName === 'Free') {
-      // For Free plan, we update the user metadata via our custom API
-      const activateFreePlan = async () => {
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!session) return;
-
-          const res = await fetch('/api/update-tier', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.access_token}`
-            },
-            body: JSON.stringify({ tier: 'Free' })
-          });
-
-          if (res.ok) {
-            router.push('/dashboard?plan_activated=true');
-          } else {
-            const err = await res.json();
-            alert(err.error || 'Failed to activate Free plan');
-          }
-        } catch (err) {
-          alert('Network error while activating plan');
-          console.error(err);
-        }
-      };
-      activateFreePlan();
-      return;
-    }
-
-    const cycle = isYearly ? 'yearly' : 'monthly';
-    handleRazorpayCheckout(
-      planName,
-      cycle,
-      () => {
-        router.push('/dashboard?payment_success=true');
-      },
-      (err) => {
-        alert(err || 'Payment failed');
-      }
-    );
-  };
-
-  const plans = [
-    { 
-      name: 'Free', 
-      price: '₹0', 
-      period: '',
-      audience: 'For students trying the product',
-      features: ['5 Tasks per month', '1 Workspace', 'Community Support', 'Basic speed queue'], 
-      missing: ['No data exports'],
-      popular: false
-    },
-    { 
-      name: 'Pro',  
-      price: isYearly ? '₹3,999' : '₹399', 
-      period: isYearly ? '/yr' : '/mo',
-      audience: 'For freelancers & small businesses',
-      features: ['60 Tasks per month', 'Normal execution speed', 'Data Exports (CSV/JSON)', 'Saved task history', 'Basic workflows'], 
-      popular: true
-    },
-    { 
-      name: 'Ultimate',   
-      price: isYearly ? '₹9,999' : '₹999',
-      period: isYearly ? '/yr' : '/mo',
-      audience: 'For mid-level & scaling businesses', 
-      features: ['200 Tasks per month', 'Faster priority queue', 'Data Exports (CSV/JSON)', 'Saved workflows', 'Live task monitoring', 'Priority Support'],    
-      popular: false
-    },
-  ];
+  const [isAnnual, setIsAnnual] = useState(true);
 
   return (
-    <div className="bg-[#0b0f1a] text-slate-200 font-sans min-h-screen selection:bg-brand-primary/30">
+    <div className="min-h-screen bg-[#050508] text-slate-200 font-sans selection:bg-brand-primary/30">
       <Head>
-        <title>Pricing | Scrayva Web Automation</title>
-        <meta name="description" content="Simple, transparent pricing for Scrayva. Fast and autonomous web research agents for students and businesses." />
+        <title>Pricing | Scrayva</title>
       </Head>
 
       <Navbar />
 
-      <main className="pt-24 md:pt-32 pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="relative pt-32 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         
-        {/* Header */}
-        <div className="text-center mb-10 md:mb-16 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-brand-accent text-xs font-semibold uppercase tracking-wider mb-6">
-            <span className="flex h-2 w-2 rounded-full bg-brand-primary animate-pulse" />
-            Simple Pricing
-          </div>
-          <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight leading-[1.1]">
-            Scale your <span className="gradient-text">research</span> without scaling costs.
-          </h1>
-          <p className="text-xl text-slate-400">
-            Start for free, upgrade when you need more power and speed.
-          </p>
+        {/* Background Ambient Glows */}
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[80vw] h-[400px] bg-brand-primary/10 rounded-[100%] blur-[120px] pointer-events-none" />
+        
+        <div className="text-center max-w-3xl mx-auto mb-16 relative z-10">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight"
+          >
+            Simple pricing, <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-blue-400">
+              infinite scalability.
+            </span>
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-lg text-slate-400"
+          >
+            Stop paying per click. Pay for successful AI executions. Cancel anytime.
+          </motion.p>
+
+          {/* ─── Fluid Billing Toggle ─── */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="mt-10 flex items-center justify-center gap-4"
+          >
+            <span className={`text-sm font-medium transition-colors ${!isAnnual ? 'text-white' : 'text-slate-400'}`}>Monthly</span>
+            <button
+              onClick={() => setIsAnnual(!isAnnual)}
+              className="relative w-16 h-8 rounded-full bg-white/10 p-1 border border-white/5 shadow-inner transition-colors focus:outline-none"
+            >
+              <motion.div
+                className="w-6 h-6 bg-brand-primary rounded-full shadow-lg"
+                layout
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                style={{ marginLeft: isAnnual ? "32px" : "0px" }}
+              />
+            </button>
+            <span className={`text-sm font-medium transition-colors flex items-center gap-2 ${isAnnual ? 'text-white' : 'text-slate-400'}`}>
+              Yearly 
+              <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full border border-green-500/30">
+                Save 20%
+              </span>
+            </span>
+          </motion.div>
         </div>
 
-        {/* Toggle */}
-        <div className="flex justify-center mb-16">
-          <div className="bg-slate-800/50 p-1.5 rounded-full inline-flex relative border border-white/5 shadow-inner">
-            <button 
-              onClick={() => setIsYearly(false)}
-              className={`relative z-10 px-6 py-2 rounded-full text-sm font-semibold transition-colors ${!isYearly ? 'text-white' : 'text-slate-400 hover:text-white'}`}>
-              Monthly
-            </button>
-            <button 
-              onClick={() => setIsYearly(true)}
-              className={`relative z-10 px-6 py-2 rounded-full text-sm font-semibold transition-colors flex gap-2 items-center ${isYearly ? 'text-white' : 'text-slate-400 hover:text-white'}`}>
-              Yearly <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full uppercase tracking-wider">Save 16%</span>
-            </button>
-            <div 
-              className="absolute top-1.5 bottom-1.5 w-[50%] bg-brand-primary rounded-full transition-transform duration-300 ease-in-out shadow-lg shadow-brand-primary/20 z-0"
-              style={{ transform: isYearly ? 'translateX(100%)' : 'translateX(0)' }} 
-            />
-          </div>
-        </div>
-
-        {/* Pricing Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
-          {plans.map((plan) => (
-            <div key={plan.name}
-              className={`p-8 rounded-3xl flex flex-col ${plan.popular ? 'bg-brand-primary/5 border-2 border-brand-primary relative lg:scale-105 shadow-2xl shadow-brand-primary/10 z-10' : 'bg-slate-800/10 border border-white/5'}`}>
-              
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-primary text-white text-[10px] font-bold uppercase tracking-widest py-1 px-4 rounded-full">
-                  Most Popular
+        {/* ─── Pricing Cards Grid ─── */}
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto relative z-10">
+          {pricingPlans.map((plan, index) => (
+            <motion.div
+              key={plan.name}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 + index * 0.1, duration: 0.5 }}
+              whileHover={{ y: -8, scale: 1.01 }}
+              className={`relative rounded-3xl p-8 h-full flex flex-col bg-white/[0.02] border backdrop-blur-xl transition-all duration-300 ${
+                plan.isPopular 
+                  ? 'border-brand-primary/50 shadow-[0_0_40px_rgba(139,92,246,0.15)]' 
+                  : 'border-white/10 hover:border-white/20'
+              }`}
+            >
+              {plan.isPopular && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-brand-primary to-blue-500 text-white text-xs font-bold uppercase tracking-widest py-1.5 px-4 rounded-full shadow-lg flex items-center gap-1">
+                  <Zap className="w-3 h-3 fill-current" /> Most Popular
                 </div>
               )}
-              
-              <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">{plan.name}</h3>
-              <p className="text-slate-400 text-sm mb-6 pb-6 border-b border-white/10 h-16">{plan.audience}</p>
-              
-              <div className="mb-8">
-                <span className="text-5xl font-extrabold text-white tracking-tighter">{plan.price}</span>
-                <span className="text-slate-400 ml-1">{plan.period}</span>
-              </div>
-              
-              <ul className="text-slate-300 space-y-4 mb-10 flex-grow">
-                {plan.features.map((f) => (
-                  <li key={f} className="flex items-start gap-3 text-sm font-medium">
-                    <svg className="w-5 h-5 text-brand-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    {f}
-                  </li>
-                ))}
-                {plan.missing && plan.missing.map((f) => (
-                  <li key={f} className="flex items-start gap-3 text-sm font-medium text-slate-500 opacity-60">
-                    <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              
-              <button 
-                onClick={() => handlePlanClick(plan.name)}
-                className={`w-full py-3.5 px-6 rounded-xl font-bold transition-all text-center block ${
-                  plan.popular 
-                    ? 'bg-brand-primary hover:bg-brand-secondary text-white shadow-lg shadow-brand-primary/20 hover:shadow-brand-primary/40' 
-                    : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 hover:border-slate-600'
-                }`}>
-                {plan.popular ? 'Get Started Now' : `Choose ${plan.name}`}
-              </button>
 
-            </div>
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
+                <p className="text-sm text-slate-400 min-h-[40px]">{plan.description}</p>
+              </div>
+
+              <div className="mb-8">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-slate-400 font-medium">₹</span>
+                  <AnimatePresence mode="wait">
+                    <motion.span 
+                      key={isAnnual ? plan.yearlyPrice : plan.monthlyPrice}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="text-5xl font-extrabold text-white tracking-tight"
+                    >
+                      {isAnnual ? plan.yearlyPrice : plan.monthlyPrice}
+                    </motion.span>
+                  </AnimatePresence>
+                  <span className="text-slate-500 font-medium ml-1">/ {isAnnual ? 'yr' : 'mo'}</span>
+                </div>
+                {isAnnual && plan.monthlyPrice > 0 && (
+                  <p className="text-sm text-green-400 mt-2 font-medium">
+                    Billed annually (₹{(plan.yearlyPrice / 12).toFixed(0)}/mo)
+                  </p>
+                )}
+              </div>
+
+              <Link 
+                href={plan.buttonLink}
+                className={`w-full py-3.5 rounded-xl text-center font-bold transition-all mb-8 shadow-lg inline-block ${
+                  plan.isPopular
+                    ? 'bg-brand-primary text-white hover:bg-brand-secondary hover:shadow-[0_0_20px_rgba(139,92,246,0.4)]'
+                    : 'bg-white/5 text-white hover:bg-white/10 border border-white/10'
+                }`}
+              >
+                {plan.buttonText}
+              </Link>
+
+              <div className="flex-1 space-y-4">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">What&apos;s included</p>
+                {plan.features.map((feature) => (
+                  <div key={feature} className="flex items-start gap-3">
+                    <div className="mt-0.5 rounded-full bg-brand-primary/20 p-0.5">
+                      <Check className="w-4 h-4 text-brand-primary" />
+                    </div>
+                    <span className="text-sm text-slate-300">{feature}</span>
+                  </div>
+                ))}
+                
+                {plan.missingFeatures.map((feature) => (
+                  <div key={feature} className="flex items-start gap-3 opacity-40 grayscale">
+                    <div className="mt-0.5 p-0.5">
+                      <X className="w-4 h-4 text-slate-500" />
+                    </div>
+                    <span className="text-sm text-slate-500 line-through">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
           ))}
         </div>
       </main>
-
-      {/* Basic Footer */}
-      <footer className="w-full py-12 mt-10 border-t border-white/5 bg-[#070b14]/50 text-center">
-        <p className="text-slate-500 text-sm">
-          Secured by Razorpay. All transactions are fully encrypted. Need custom limits? <a href="https://mail.google.com/mail/?view=cm&fs=1&to=support@scrayva.space&su=Custom%20Plan%20Inquiry" target="_blank" rel="noopener noreferrer" className="text-brand-accent hover:underline">Contact us</a>.
-        </p>
-      </footer>
     </div>
   );
 }
