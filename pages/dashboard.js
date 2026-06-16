@@ -9,6 +9,7 @@ import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabase';
 import Toast, { useToast } from '../components/Toast';
 import MobileNav from '../components/MobileNav';
+import Sidebar from '../components/Sidebar'; // <-- FIX: Added Sidebar Import
 import { motion } from 'framer-motion';
 import { Terminal, Send, Search, Download, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 
@@ -62,7 +63,7 @@ export default function Dashboard() {
     fetchTasks();
     const interval = setInterval(fetchTasks, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [router]);
 
   const submitTask = async (e) => {
     e?.preventDefault();
@@ -120,7 +121,11 @@ export default function Dashboard() {
     <div className="min-h-screen flex bg-black text-white font-sans selection:bg-[#0ea5e9]/30">
       <Head><title>Command Center | Scrayva</title></Head>
 
-      {/* Mobile Nav is hidden on desktop, Sidebar takes over */}
+      {/* FIX: Added missing Sidebar component */}
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
+
       <MobileNav />
 
       {/* Main Content Area */}
@@ -258,7 +263,6 @@ export default function Dashboard() {
   );
 }
 
-// Choti si arrow icon add kar di component ke bahar fallback ke liye
 function ArrowRight(props) {
   return (
     <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
