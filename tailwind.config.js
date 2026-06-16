@@ -6,11 +6,14 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Layout / dark theme
-        'dark-bg':     '#0b0f1a',
-        'dark-card':   '#161b26',
+        // Layout / dark theme (Electric Blue & Cyan)
+        'brand-primary': '#0ea5e9',
+        'brand-secondary': '#38bdf8',
+        'dark-bg':     '#09090b',
+        'dark-surface': '#18181b',
+        'dark-card':   '#18181b',
         'dark-border': '#262626',
-        'dark-text':   '#e2e8f0',
+        'dark-text':   '#fafafa',
         'dark-muted':  '#94a3b8',
         // Brand purple
         'purple-main': '#8b5cf6',

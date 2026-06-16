@@ -19,8 +19,8 @@ const AbstractCore = () => {
         <mesh scale={1.2}>
           <icosahedronGeometry args={[1, 16]} /> {/* Slightly smoothed geometry */}
           <MeshDistortMaterial 
-            color="#8b5cf6" 
-            emissive="#3b0764" // Darker emissive for better contrast
+            color="#0ea5e9" // Electric Blue
+            emissive="#0284c7" 
             envMapIntensity={1} 
             roughness={0.2} 
             metalness={0.8}
@@ -55,7 +55,7 @@ export default function Home() {
         >
           <ambientLight intensity={0.5} />
           <directionalLight position={[5, 5, 5]} intensity={1} color="#ffffff" />
-          <spotLight position={[-5, -5, -5]} intensity={0.5} color="#8b5cf6" />
+          <spotLight position={[-5, -5, -5]} intensity={0.5} color="#0ea5e9" />
           
           {/* Changed preset to 'warehouse' or 'studio' as they load faster than 'city' */}
           <Environment preset="studio" />
@@ -70,8 +70,8 @@ export default function Home() {
       </div>
 
       {/* ─── Background Ambient Glows (Replaces CSS mix-blend) ──────────── */}
-      <div className="fixed top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-brand-primary/10 rounded-full blur-[120px] pointer-events-none z-0" />
-      <div className="fixed bottom-[-10%] right-[-10%] w-[30vw] h-[30vw] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none z-0" />
+      <div className="fixed top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-[#0ea5e9]/15 rounded-full blur-[120px] pointer-events-none z-0" />
+      <div className="fixed bottom-[-10%] right-[-10%] w-[30vw] h-[30vw] bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none z-0" />
 
       {/* ─── Hero Content ────────────────────────────────────────────────── */}
       <main className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 pt-20 text-center max-w-7xl mx-auto" style={{ willChange: "transform, opacity" }}>
