@@ -137,7 +137,7 @@ export default function Dashboard() {
       return;
     }
     const header = "ID,Prompt,Status,Created At\n";
-    const rows = tasks.map(t => `"${t.id}","${t.prompt.replace(/"/g, '""')}","${t.status}","${new Date(t.created_at).toLocaleString()}"`).join("\n");
+    const rows = tasks.map(t => `"${t.id}","${(t.prompt || '').replace(/"/g, '""')}","${t.status}","${new Date(t.created_at).toLocaleString()}"`).join("\n");
     const blob = new Blob([header + rows], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = 'scrayva-tasks.csv'; a.click();
@@ -293,7 +293,7 @@ export default function Dashboard() {
                         <span className="text-xs text-dark-muted">{task.created_at ? new Date(task.created_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true }) : 'Unknown Date'}</span>
                       </div>
                       <p className="text-sm text-slate-300 truncate font-medium">{task.prompt}</p>
-                      {task.error && <p className="text-xs text-red-400 mt-1 truncate">{task.error}</p>}
+                      {(task.error || task.result?.error) && <p className="text-xs text-red-400 mt-1 truncate">{task.error || task.result?.error}</p>}
                     </div>
                     <div className="flex-shrink-0">
                       <Link href={`/tasks/${task.id}`}

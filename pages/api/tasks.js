@@ -18,7 +18,7 @@ export default async function handler(req, res) {
       if (userError || !user) return res.status(401).json({ error: 'Unauthorized: Invalid token' });
 
       const tier = user.user_metadata?.tier || 'Free';
-      const credits = user.user_metadata?.credits ?? (tier === 'Pro' ? 50 : 5);
+      const credits = user.user_metadata?.credits ?? (tier === 'Pro' ? 60 : tier === 'Ultimate' ? 200 : 5);
 
       // Priority: Ultimate=2 (highest), Pro=1, Free=0 (lowest = waits longest)
       const TIER_PRIORITY = { 'Ultimate': 2, 'Pro': 1, 'Free': 0, 'None': 0 };
@@ -29,15 +29,6 @@ export default async function handler(req, res) {
       }
 
       const { prompt } = req.body;
-      
-      // 1. Deduct credit (non-blocking — failure warns but never kills task creation)
-      const { error: updateError } = await supabase.auth.admin.updateUserById(user.id, {
-        user_metadata: { ...user.user_metadata, credits: credits - 1 }
-      });
-      if (updateError) {
-        console.warn(`[tasks] Credit deduction failed for user ${user.id}:`, updateError.message);
-        // Don't throw — task creation should still proceed
-      }
       
       // 1. Create task in Supabase
       // workspace_id uses user.id as a stable stand-in (satisfies NOT NULL constraint)
@@ -51,6 +42,12 @@ export default async function handler(req, res) {
         .single();
         
       if (insertError) throw insertError;
+
+      // 2. Deduct credit atomically using RPC AFTER successful task insertion
+      const { error: rpcError } = await supabase.rpc('decrement_user_credits', { user_uuid: user.id });
+      if (rpcError) {
+        console.warn(`[tasks] Atomic credit deduction failed for user ${user.id}:`, rpcError.message);
+      }
 
       // 2. Trigger worker which now immediately returns 202 via BackgroundTasks.
       // We await it so Vercel does not terminate the TCP connection prematurely.

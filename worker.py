@@ -239,32 +239,35 @@ async def lifespan(app: FastAPI):
             
             if "Executable doesn't exist" in err_msg or "executablePath" in err_msg:
                 logger.warning("Chromium executable missing. Auto-installing asynchronously (non-blocking)...")
-                try:
-                    # MUST use asyncio subprocess — blocking subprocess.run() freezes the
-                    # event loop for the full download duration (~3 min) and Render's HTTP
-                    # health checker gets no response → Render kills the service.
-                    import subprocess as _sp
-                    _install_proc = await asyncio.create_subprocess_exec(
-                        "python", "-m", "playwright", "install", "chromium",
-                        stdout=_sp.PIPE,
-                        stderr=_sp.STDOUT,
-                    )
-                    _install_stdout, _ = await _install_proc.communicate()
-                    if _install_proc.returncode != 0:
-                        raise RuntimeError(f"playwright install exited {_install_proc.returncode}: {(_install_stdout or b'').decode()[-500:]}")
-                    logger.info("Auto-installation complete. Retrying launch verification...")
-                    from playwright.async_api import async_playwright
-                    async with async_playwright() as _p_retry:
-                        browser = await _p_retry.chromium.launch(headless=IS_HEADLESS)
-                        await browser.close()
-                        RUNTIME["playwright"]["chromium_path"] = _p_retry.chromium.executable_path
-                        RUNTIME["playwright"]["ok"] = True
-                        RUNTIME["playwright"]["error"] = ""
-                        logger.info("✓ Playwright async logic verified successfully after auto-install")
-                except Exception as retry_err:
-                    err_msg = f"Auto-install failed: {type(retry_err).__name__}: {str(retry_err)}"
-                    RUNTIME["playwright"]["error"] = err_msg
-                    logger.error("✗ Playwright auto-install and retry FAILED: %s", err_msg)
+                async def _install_and_retry():
+                    try:
+                        # MUST use asyncio subprocess — blocking subprocess.run() freezes the
+                        # event loop for the full download duration (~3 min) and Render's HTTP
+                        # health checker gets no response → Render kills the service.
+                        import subprocess as _sp
+                        _install_proc = await asyncio.create_subprocess_exec(
+                            "python", "-m", "playwright", "install", "chromium",
+                            stdout=_sp.PIPE,
+                            stderr=_sp.STDOUT,
+                        )
+                        _install_stdout, _ = await _install_proc.communicate()
+                        if _install_proc.returncode != 0:
+                            raise RuntimeError(f"playwright install exited {_install_proc.returncode}: {(_install_stdout or b'').decode()[-500:]}")
+                        logger.info("Auto-installation complete. Retrying launch verification...")
+                        from playwright.async_api import async_playwright
+                        async with async_playwright() as _p_retry:
+                            browser = await _p_retry.chromium.launch(headless=IS_HEADLESS)
+                            await browser.close()
+                            RUNTIME["playwright"]["chromium_path"] = _p_retry.chromium.executable_path
+                            RUNTIME["playwright"]["ok"] = True
+                            RUNTIME["playwright"]["error"] = ""
+                            logger.info("✓ Playwright async logic verified successfully after auto-install")
+                    except Exception as retry_err:
+                        err_msg = f"Auto-install failed: {type(retry_err).__name__}: {str(retry_err)}"
+                        RUNTIME["playwright"]["error"] = err_msg
+                        logger.error("✗ Playwright auto-install and retry FAILED: %s", err_msg)
+                
+                asyncio.create_task(_install_and_retry())
             elif "NotImplementedError" in err_msg and sys.platform == "win32":
                 logger.error(
                     "✗ Playwright async check FAILED: NotImplementedError\n"
@@ -404,9 +407,10 @@ def _get_next_api_key() -> str:
     keys = [k.strip() for k in raw.split(",") if k.strip()]
     if not keys:
         return ""
-    key = keys[_KEY_INDEX % len(keys)]
+    used_index = _KEY_INDEX % len(keys)
+    key = keys[used_index]
     _KEY_INDEX = (_KEY_INDEX + 1) % len(keys)
-    logger.info("Using Gemini API key #%d of %d", (_KEY_INDEX), len(keys))
+    logger.info("Using Gemini API key #%d of %d", used_index, len(keys))
     return key
 
 import base64
