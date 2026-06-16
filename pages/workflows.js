@@ -1,28 +1,31 @@
+// ==========================================
+// FILE: pages/workflows.js
+// ==========================================
+
 import Head from 'next/head';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
-import Toast, { useToast } from '../components/Toast';
-import { supabase } from '../lib/supabase';
 import { useRouter } from 'next/router';
-import useScrollReveal from '../hooks/useScrollReveal';
+import { motion } from 'framer-motion';
+import { supabase } from '../lib/supabase';
+import Toast, { useToast } from '../components/Toast';
 import MobileNav from '../components/MobileNav';
+import Sidebar from '../components/Sidebar'; // Using the premium sidebar we created
+import { Bot, Plus, Play, Pause, Clock, Terminal, Activity, Server, Loader2, ArrowRight, Database } from 'lucide-react';
 
+// Core logic for scheduling (Kept from your original code)
 function shouldRun(schedule, lastRunMs) {
   if (!schedule) return false;
-  
   const now = Date.now();
   const safeLastRunMs = lastRunMs || 0;
   const diff = now - safeLastRunMs;
-  
   const str = schedule.toLowerCase();
 
-  // Seeding case: if never run, but it's a schedule, let it run
   if (safeLastRunMs === 0) {
       if (str.includes('every') || str.includes('daily') || str.includes('weekly')) return true;
       return false;
   }
   
-  // Broader matching: "every 5 minutes", "every hour", "daily", "weekly", "monthly", "yearly"
   if (str === 'daily') return diff >= 24 * 60 * 60 * 1000;
   if (str === 'weekly') return diff >= 7 * 24 * 60 * 60 * 1000;
   if (str === 'monthly') return diff >= 30 * 24 * 60 * 60 * 1000;
@@ -46,9 +49,8 @@ function shouldRun(schedule, lastRunMs) {
 }
 
 const INIT_WORKFLOWS = [
-  { id: 'price-monitor',  title: 'E-commerce Price Monitor',    desc: 'Extracts competitor pricing daily from top 5 retail sites.', status: 'active',  lastRun: '2 hours ago', schedule: 'Daily',   destination: 'Google Sheets' },
+  { id: 'price-monitor',  title: 'E-commerce Price Monitor',    desc: 'Extracts competitor pricing daily from top 5 retail sites.', status: 'active',  lastRun: '2 hours ago', schedule: 'Daily',   destination: 'JSON Export' },
   { id: 'linkedin-leads', title: 'LinkedIn Trend Monitor',      desc: 'Captures posting trends matching job titles and regions.',     status: 'paused',  lastRun: '3 days ago',  schedule: 'Weekly',  destination: 'Webhook'       },
-  { id: 'tech-news',      title: 'Daily Tech News Digest',       desc: 'Scrapes HN and TechCrunch and emails a daily digest.',       status: 'active',  lastRun: 'Today, 6 AM',  schedule: 'Daily',   destination: 'Email Digest'  },
 ];
 
 export default function Workflows() {
@@ -57,19 +59,20 @@ export default function Workflows() {
   const [tier, setTier] = useState('Free');
   const [credits, setCredits] = useState(null);
   const [taskStatuses, setTaskStatuses] = useState({});
+  const [isDeploying, setIsDeploying] = useState(false);
   const { toast, showToast } = useToast();
   const router = useRouter();
-  useScrollReveal();
 
   const workflowsRef = useRef(workflows);
   useEffect(() => { workflowsRef.current = workflows; }, [workflows]);
 
   const handleRunNowRef = useRef();
 
+  // Background Tick Engine
   useEffect(() => {
     const tick = setInterval(() => {
       workflowsRef.current.forEach(wf => {
-        if (wf.status === 'active' && shouldRun(wf.schedule, wf.last_run_ms || wf.lastRunMs)) {
+        if (wf.status === 'active' && shouldRun(wf.schedule, wf.lastRunMs)) {
            if (handleRunNowRef.current) handleRunNowRef.current(wf);
         }
       });
@@ -100,34 +103,21 @@ export default function Workflows() {
         setUser(user);
         const userTier = user.user_metadata?.tier || 'Free';
         setTier(userTier);
+        setCredits(user.user_metadata?.credits ?? (userTier === 'Ultimate' ? 200 : userTier === 'Pro' ? 60 : 5));
+
+        const storageKey = `scrayva_workflows_${user.id}`;
+        let savedWorkflows = JSON.parse(localStorage.getItem(storageKey) || '[]');
         
-        let initialCredits = 5;
-        if (userTier === 'Pro') initialCredits = 60;
-        if (userTier === 'Ultimate') initialCredits = 200;
-        setCredits(user.user_metadata?.credits ?? initialCredits);
-
-        const fetchWorkflows = async () => {
-          const { data, error } = await supabase.from('workflows').select('*').order('created_at', { ascending: false });
-          if (data && data.length > 0) {
-            setWorkflows(data);
-          } else {
-            const seed = INIT_WORKFLOWS.map(w => ({
-              user_id: user.id,
-              title: w.title,
-              description: w.desc,
-              prompt: w.desc,
-              status: w.status,
-              schedule: w.schedule,
-              destination: w.destination,
-              last_run: 'Never',
-              last_run_ms: 0
-            }));
-            const { data: insertedData } = await supabase.from('workflows').insert(seed).select();
-            if (insertedData) setWorkflows(insertedData);
-          }
-        };
-        fetchWorkflows();
-
+        if (savedWorkflows.length === 0) {
+          savedWorkflows = INIT_WORKFLOWS.map(w => ({
+            ...w,
+            id: `wf-${Math.random().toString(36).substr(2, 9)}`,
+            lastRunMs: 0,
+            lastRun: 'Never'
+          }));
+          localStorage.setItem(storageKey, JSON.stringify(savedWorkflows));
+        }
+        setWorkflows(savedWorkflows);
         fetchTasks();
         interval = setInterval(fetchTasks, 3000);
       } else {
@@ -143,16 +133,15 @@ export default function Workflows() {
       const updated = prev.map((w) => {
         if (w.id !== id) return w;
         const next = w.status === 'active' ? 'paused' : 'active';
-        showToast(next === 'active' ? `"${w.title}" resumed.` : `"${w.title}" paused.`, next === 'active' ? 'success' : 'info');
+        showToast(next === 'active' ? `Node Resumed` : `Node Paused`, next === 'active' ? 'success' : 'info');
         
         const activatedNow = { ...w, status: next };
-        if (next === 'active' && shouldRun(activatedNow.schedule, activatedNow.last_run_ms || activatedNow.lastRunMs)) {
+        if (next === 'active' && shouldRun(activatedNow.schedule, activatedNow.lastRunMs)) {
            if (handleRunNowRef.current) setTimeout(() => handleRunNowRef.current(activatedNow), 100);
         }
-        
-        supabase.from('workflows').update({ status: next }).eq('id', w.id).then();
         return activatedNow;
       });
+      if (user) localStorage.setItem(`scrayva_workflows_${user.id}`, JSON.stringify(updated));
       return updated;
     });
   };
@@ -160,22 +149,19 @@ export default function Workflows() {
   const handleScheduleChange = (id, value) => {
     setWorkflows((prev) => {
       const updated = prev.map((w) => w.id === id ? { ...w, schedule: value } : w);
-      supabase.from('workflows').update({ schedule: value }).eq('id', id).then();
+      if (user) localStorage.setItem(`scrayva_workflows_${user.id}`, JSON.stringify(updated));
       return updated;
     });
   };
 
-  const handleNewWorkflow = () => {
-    router.push('/builder');
-  };
-
   const handleRunNow = async (w) => {
     if (tier === 'None') {
-      showToast('Redirecting to choose a plan...', 'info');
+      showToast('Action requires active plan.', 'info');
       router.push('/pricing');
       return;
     }
     
+    setIsDeploying(w.id);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const headers = { 'Content-Type': 'application/json' };
@@ -190,206 +176,211 @@ export default function Workflows() {
       if (res.ok) {
         const task = await res.json();
         setCredits(prev => Math.max(0, (prev || 0) - 1));
-        
-        const queueMsg = tier === 'Free'
-          ? `Task queued for workflow! Your task will start in ~60s.`
-          : `Task queued for workflow! Starting immediately...`;
-        showToast(queueMsg, 'success');
+        showToast('Node executing.', 'success');
 
         setWorkflows((prev) => {
           const updated = prev.map((item) => {
             if (item.id === w.id) {
-              const newData = { 
+              return { 
                 ...item, 
-                last_run_id: task.id, 
-                last_run: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                last_run_ms: Date.now()
+                lastRunId: task.id, 
+                lastRun: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                lastRunMs: Date.now()
               };
-              supabase.from('workflows').update({
-                  last_run: newData.last_run,
-                  last_run_ms: newData.last_run_ms
-              }).eq('id', w.id).then();
-              return newData;
             }
             return item;
           });
+          if (user) localStorage.setItem(`scrayva_workflows_${user.id}`, JSON.stringify(updated));
           return updated;
         });
 
         setTaskStatuses(prev => ({...prev, [task.id]: 'queued'}));
       } else {
         const err = await res.json();
-        showToast(`Error: ${err.error || 'Failed to submit task'}`, 'error');
+        showToast(`Error: ${err.error}`, 'error');
       }
     } catch (e) {
-      showToast('Network error while saving task.', 'error');
+      showToast('Network disruption.', 'error');
+    } finally {
+      setIsDeploying(null);
     }
   };
 
-  useEffect(() => {
-    handleRunNowRef.current = handleRunNow;
-  });
+  useEffect(() => { handleRunNowRef.current = handleRunNow; });
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  };
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
 
   return (
-    <div className="min-h-screen flex bg-slate-950 text-slate-200 font-sans antialiased">
+    <div className="min-h-screen flex bg-black text-slate-200 font-sans antialiased selection:bg-[#0ea5e9]/30">
       <Head><title>Workflows | Scrayva</title></Head>
 
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-slate-800 bg-slate-900 hidden lg:flex flex-col">
-        <div className="p-6">
-          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-white italic">S</div>
-            <span className="text-xl font-bold tracking-tight text-white">Scrayva</span>
-          </Link>
-        </div>
-        <nav className="flex-1 px-4 space-y-2 mt-4">
-          {[
-            { label: 'Dashboard', href: '/dashboard', active: false },
-            { label: 'Workflows', href: '/workflows', active: true  },
-            { label: 'Voice Agent', href: '/voice-dashboard', active: false },
-            { label: 'Templates', href: '/templates', active: false },
-            { label: 'Settings',  href: '/settings',  active: false },
-          ].map((item) => (
-            <Link key={item.href} href={item.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${item.active ? 'bg-indigo-600/10 text-indigo-400 font-medium' : 'text-slate-400 hover:bg-slate-800'}`}>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d={item.active ? "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" : "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"} strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-              </svg>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="p-4 border-t border-slate-800 space-y-4">
-          <div className="bg-slate-950/50 rounded-xl p-3">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Compute</span>
-              <span className="text-xs font-bold text-white">{credits !== null ? credits : '-'} Credits</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 p-2 bg-slate-950/50 rounded-xl">
-            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold">
-              {user?.email?.[0]?.toUpperCase() || 'U'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{user?.email || 'My Account'}</p>
-              <p className="text-xs text-slate-500 truncate">{tier} Plan</p>
-            </div>
-          </div>
-        </div>
-      </aside>
+      {/* Global Sidebar component integration */}
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
 
-      {/* Main */}
-      <main className="flex-1 flex flex-col min-h-screen overflow-y-auto pb-24 lg:pb-0">
-        <header className="p-4 md:p-8 border-b border-slate-900 flex flex-col md:flex-row md:items-center justify-between gap-4 sticky top-0 bg-slate-950/80 backdrop-blur-md z-10">
-          <div>
-            <h1 className="text-3xl font-bold text-white tracking-tight">Saved Workflows</h1>
-            <p className="text-slate-400 mt-1">Manage and monitor your automated extraction processes.</p>
-          </div>
-          <button onClick={handleNewWorkflow}
-            className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-semibold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-            </svg>
-            New Workflow
-          </button>
+      <main className="flex-1 flex flex-col min-h-screen overflow-y-auto pb-24 md:pb-8 ml-0 md:ml-64 relative">
+        
+        {/* Ambient Glow */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#0ea5e9]/5 rounded-full blur-[120px] pointer-events-none -z-10" />
+
+        <header className="px-4 py-6 md:px-10 md:py-10 flex flex-col sm:flex-row sm:items-end justify-between gap-6 sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/5">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
+            <p className="text-[#0ea5e9] text-sm font-semibold tracking-widest uppercase mb-1 flex items-center gap-2">
+              <Server className="w-4 h-4" /> Node Orchestration
+            </p>
+            <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Active Workflows</h1>
+          </motion.div>
+          
+          <motion.button 
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4, delay: 0.1 }}
+            onClick={() => router.push('/builder')}
+            className="group relative px-6 py-2.5 bg-[#09090b] border border-white/10 hover:border-[#0ea5e9]/50 text-white font-bold rounded-xl overflow-hidden shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-all"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0ea5e9]/20 to-[#38bdf8]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <span className="relative z-10 flex items-center gap-2">
+              <Plus className="w-4 h-4" /> Create Node
+            </span>
+          </motion.button>
         </header>
 
-        <section className="p-4 md:p-8 space-y-6">
+        <section className="p-4 md:p-10">
           {workflows.length === 0 ? (
-            <div className="text-center py-24 glass-card rounded-2xl border border-slate-800 flex flex-col items-center justify-center">
-              <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mb-6">
-                <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                </svg>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-24 bg-[#09090b] rounded-3xl border border-white/5 flex flex-col items-center justify-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
+              <div className="relative z-10">
+                <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-inner mx-auto">
+                  <Activity className="w-8 h-8 text-slate-500" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">No Active Nodes</h3>
+                <p className="text-slate-400 mb-8 max-w-sm mx-auto">Deploy a workflow node to schedule and automate your data extraction pipelines.</p>
+                <button onClick={() => router.push('/builder')} className="bg-[#0ea5e9] text-white px-6 py-3 rounded-xl font-bold shadow-[0_0_20px_rgba(14,165,233,0.3)] hover:shadow-[0_0_30px_rgba(14,165,233,0.5)] transition-all active:scale-95">
+                  Initialize First Node
+                </button>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">No active workflows</h3>
-              <p className="text-slate-400 mb-8 max-w-sm">You haven't saved or scheduled any automation workflows yet.</p>
-              <button onClick={handleNewWorkflow} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold border border-indigo-500/50 shadow-xl shadow-indigo-600/20 transition-all active:scale-95">
-                Create your first workflow
-              </button>
-            </div>
+            </motion.div>
           ) : (
-            workflows.map((wf) => (
-              <article key={wf.id} className="glass-card rounded-2xl p-6 flex flex-col xl:flex-row gap-6 items-start xl:items-center hover:border-slate-700 transition-all">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-lg font-bold text-white">{wf.title}</h2>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${wf.status === 'active' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-slate-700 text-slate-400 border-slate-600'}`}>
-                      {wf.status === 'active' ? 'Active' : 'Paused'}
-                    </span>
-                  </div>
-                  <p className="text-slate-400 text-sm line-clamp-1 mb-4">{wf.prompt || wf.desc}</p>
-                  <div className="flex flex-wrap items-center gap-3 text-xs mt-3 lg:mt-0">
-                    <span className="bg-slate-900/50 px-3 py-1.5 rounded-full text-slate-500">Last run: {wf.last_run || wf.lastRun}</span>
-                    {(wf.last_run_id || wf.lastRunId) && taskStatuses[(wf.last_run_id || wf.lastRunId)] && (
-                      <span className={`px-2 py-1 rounded font-bold uppercase tracking-widest text-[10px] flex items-center gap-1.5
-                        ${taskStatuses[(wf.last_run_id || wf.lastRunId)].toLowerCase() === 'completed' ? 'bg-green-500/10 text-green-400' :
-                        taskStatuses[(wf.last_run_id || wf.lastRunId)].toLowerCase() === 'failed' ? 'bg-red-500/10 text-red-400' :
-                        'bg-sky-500/10 text-sky-400'}`}
-                      >
-                        {['queued', 'running'].includes(taskStatuses[(wf.last_run_id || wf.lastRunId)].toLowerCase()) && <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>}
-                        {taskStatuses[(wf.last_run_id || wf.lastRunId)]}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-800">
-                  <div className="flex-1 flex gap-2">
-                    <button onClick={() => toggleStatus(wf.id)} className={`px-5 py-2.5 rounded-lg font-bold text-sm transition-all flex items-center gap-2 ${wf.status === 'active' ? 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'}`}>
-                      {wf.status === 'active' ? 'Pause' : 'Resume'}
-                    </button>
-                    <button onClick={() => { if (handleRunNowRef.current) handleRunNowRef.current(wf); }} disabled={wf.status !== 'active'} className="px-5 py-2.5 rounded-lg font-bold text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                      Run Now
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    {(wf.last_run_id || wf.lastRunId) && (
-                      <Link href={`/tasks/${(wf.last_run_id || wf.lastRunId)}`} className="text-indigo-400 hover:text-indigo-300 transition-colors font-semibold">
-                        View Log &rarr;
-                      </Link>
-                    )}
-                    <button onClick={() => handleRunNow(wf)}
-                      className="bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1.5 rounded-full text-indigo-400 border border-indigo-500/20 transition-colors font-semibold ml-auto xl:ml-0">
-                      ▶ Run Now
-                    </button>
-                  </div>
-                </div>
+            <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              {workflows.map((wf) => (
+                <motion.article 
+                  variants={itemVariants} 
+                  key={wf.id} 
+                  className={`relative bg-[#09090b] rounded-3xl p-6 lg:p-8 border transition-all duration-500 overflow-hidden group ${
+                    wf.status === 'active' 
+                      ? 'border-[#0ea5e9]/30 hover:border-[#0ea5e9]/60 shadow-[inset_0_0_40px_rgba(14,165,233,0.02)] hover:shadow-[inset_0_0_60px_rgba(14,165,233,0.05)]' 
+                      : 'border-white/5 opacity-80 hover:opacity-100'
+                  }`}
+                >
+                  {/* Status Glow */}
+                  {wf.status === 'active' && (
+                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#0ea5e9]/10 blur-3xl rounded-full" />
+                  )}
 
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full xl:w-auto border-t xl:border-t-0 xl:border-l border-slate-800/50 pt-6 xl:pt-0 xl:pl-6">
-                  <div className="space-y-2 min-w-[140px]">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Schedule</label>
-                    <input
-                      type="text"
-                      value={wf.schedule}
-                      onChange={(e) => handleScheduleChange(wf.id, e.target.value)}
-                      placeholder="e.g. Every day at 5 AM"
-                      className="bg-slate-800 border-0 text-sm text-slate-200 rounded-lg w-full py-2 px-3 focus:ring-1 focus:ring-indigo-500"
-                    />
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${
+                        wf.status === 'active' ? 'bg-[#0ea5e9]/10 border-[#0ea5e9]/30 text-[#0ea5e9]' : 'bg-white/5 border-white/10 text-slate-500'
+                      }`}>
+                        <Bot className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-white tracking-tight">{wf.title}</h2>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="relative flex h-2 w-2">
+                            {wf.status === 'active' && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0ea5e9] opacity-75"></span>}
+                            <span className={`relative inline-flex rounded-full h-2 w-2 ${wf.status === 'active' ? 'bg-[#0ea5e9]' : 'bg-slate-600'}`}></span>
+                          </span>
+                          <span className={`text-[10px] font-bold uppercase tracking-widest ${wf.status === 'active' ? 'text-[#0ea5e9]' : 'text-slate-500'}`}>
+                            {wf.status === 'active' ? 'Node Active' : 'Suspended'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Master Toggle */}
+                    <button onClick={() => toggleStatus(wf.id)} className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 focus:outline-none ${wf.status === 'active' ? 'bg-[#0ea5e9]' : 'bg-slate-800 border border-slate-700'}`}>
+                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${wf.status === 'active' ? 'translate-x-6 shadow-sm' : 'translate-x-1'}`} />
+                    </button>
                   </div>
-                  <div className="space-y-2 min-w-[160px]">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Destination</label>
-                    <div className="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-lg text-sm">
-                      <span className="text-slate-300">{wf.destination}</span>
+
+                  {/* Objective Window */}
+                  <div className="bg-[#050505] border border-white/5 rounded-xl p-4 mb-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Terminal className="w-3.5 h-3.5 text-slate-500" />
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Execution Prompt</span>
+                    </div>
+                    <p className="text-sm text-slate-300 font-medium line-clamp-2">"{wf.prompt || wf.desc}"</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5"><Clock className="w-3 h-3" /> Cron Schedule</label>
+                      <input
+                        type="text"
+                        value={wf.schedule}
+                        onChange={(e) => handleScheduleChange(wf.id, e.target.value)}
+                        placeholder="e.g. Daily at 9AM"
+                        className="bg-[#050505] border border-white/10 hover:border-white/20 text-sm text-white rounded-lg w-full py-2.5 px-3 focus:outline-none focus:border-[#0ea5e9]/50 focus:ring-1 focus:ring-[#0ea5e9]/50 transition-all font-mono"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5"><Database className="w-3 h-3" /> Pipeline Dest.</label>
+                      <div className="bg-[#050505] border border-white/10 px-3 py-2.5 rounded-lg text-sm font-mono text-slate-300 flex items-center gap-2 truncate">
+                        {wf.destination}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex flex-col items-center gap-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{wf.status === 'active' ? 'ON' : 'OFF'}</label>
-                    <button onClick={() => toggleStatus(wf.id)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${wf.status === 'active' ? 'bg-indigo-600' : 'bg-slate-700'}`}
-                      role="switch" aria-checked={wf.status === 'active'}>
-                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform mx-1 ${wf.status === 'active' ? 'translate-x-5' : 'translate-x-0'}`} />
-                    </button>
+
+                  {/* Footer Actions */}
+                  <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Last Execution</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono text-slate-300">{wf.lastRun}</span>
+                        {wf.lastRunId && taskStatuses[wf.lastRunId] && (
+                          <span className={`px-2 py-0.5 text-[9px] font-bold rounded uppercase tracking-widest ${
+                            taskStatuses[wf.lastRunId].toLowerCase() === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            taskStatuses[wf.lastRunId].toLowerCase() === 'failed' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                            'bg-[#0ea5e9]/10 text-[#0ea5e9] border border-[#0ea5e9]/20 animate-pulse'
+                          }`}>
+                            {taskStatuses[wf.lastRunId]}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      {wf.lastRunId && (
+                        <Link href={`/tasks/${wf.lastRunId}`} className="text-xs font-bold text-slate-400 hover:text-white transition-colors flex items-center gap-1">
+                          Logs <ArrowRight className="w-3 h-3" />
+                        </Link>
+                      )}
+                      <button 
+                        onClick={() => handleRunNow(wf)}
+                        disabled={isDeploying === wf.id}
+                        className="flex items-center gap-2 px-4 py-2 bg-white text-black hover:bg-slate-200 disabled:opacity-50 text-xs font-bold rounded-lg transition-all"
+                      >
+                        {isDeploying === wf.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3 fill-current" />}
+                        {isDeploying === wf.id ? 'Deploying...' : 'Force Run'}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))
+                </motion.article>
+              ))}
+            </motion.div>
           )}
         </section>
       </main>
       
       <MobileNav />
-
       {toast && <Toast {...toast} onClose={() => showToast(null)} />}
     </div>
   );
