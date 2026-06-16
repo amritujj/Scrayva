@@ -1,9 +1,16 @@
+// ==========================================
+// FILE: pages/templates.js
+// ==========================================
+
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Toast, { useToast } from '../components/Toast';
 import MobileNav from '../components/MobileNav';
+import Sidebar from '../components/Sidebar';
+import { Search, Play, Plus, BookOpen, Activity, LayoutGrid } from 'lucide-react';
 
 const TEMPLATES = [
   { id: 'find-leads',       title: 'Business Intelligence',   desc: 'Automate market research by extracting data from LinkedIn, Twitter, and niche industry directories.', tags: ['Sales', 'Social'],      category: 'Market Research' },
@@ -13,16 +20,16 @@ const TEMPLATES = [
   { id: 'weekly-monitoring',title: 'Weekly Monitoring',       desc: 'Set recurring crawls to monitor price fluctuations or stock availability across any e-commerce site.',           tags: ['Scheduled', 'Retail'],   category: 'Monitoring' },
 ];
 
-const CATEGORIES = ['All Templates', 'Sales', 'Monitoring', 'Analysis'];
+const CATEGORIES = ['All', 'Market Research', 'Monitoring', 'Analysis'];
 
 export default function Templates() {
   const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState('All Templates');
+  const [activeCategory, setActiveCategory] = useState('All');
   const { toast, showToast } = useToast();
   const router = useRouter();
 
   const filtered = TEMPLATES.filter((t) => {
-    const matchCat = activeCategory === 'All Templates' || t.category === activeCategory;
+    const matchCat = activeCategory === 'All' || t.category === activeCategory;
     const matchSearch = t.title.toLowerCase().includes(search.toLowerCase()) || t.desc.toLowerCase().includes(search.toLowerCase());
     return matchCat && matchSearch;
   });
@@ -32,125 +39,120 @@ export default function Templates() {
   };
 
   const handleRequest = () => {
-    window.open('https://mail.google.com/mail/?view=cm&fs=1&to=support@scrayva.space&su=Template%20Request&body=Hi%20Scrayva%20team%2C%20I%20would%20like%20to%20request%20a%20template%20for...', '_blank');
+    window.open('https://mail.google.com/mail/?view=cm&fs=1&to=support@scrayva.space&su=Template%20Request', '_blank');
   };
 
   return (
-    <div className="min-h-screen font-sans antialiased bg-scrayva-bg text-gray-100">
-      <Head>
-        <title>Templates | Scrayva</title>
-      </Head>
+    <div className="min-h-screen flex bg-black text-slate-200 font-sans antialiased selection:bg-[#0ea5e9]/30">
+      <Head><title>Macro Library | Scrayva</title></Head>
 
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-scrayva-bg/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <div className="h-8 w-8 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold">S</span>
-              </div>
-              <span className="text-xl font-bold tracking-tight">Scrayva</span>
-            </Link>
-            <nav className="hidden md:flex space-x-8 text-sm font-medium text-scrayva-muted">
-              <Link className="hover:text-white transition-colors" href="/dashboard">Dashboard</Link>
-              <span className="text-white border-b-2 border-scrayva-accent pb-1">Templates</span>
-              <Link className="hover:text-white transition-colors" href="/workflows">Workflows</Link>
-              <Link className="hover:text-white transition-colors" href="/settings">Settings</Link>
-            </nav>
-            <div className="flex items-center gap-4">
-              <Link href="/dashboard" className="px-4 py-2 text-sm font-medium bg-scrayva-accent hover:bg-purple-600 text-white rounded-full transition-all hidden sm:block">Go to Dashboard</Link>
-              <Link href="/dashboard" className="sm:hidden p-2 text-sm font-medium bg-scrayva-accent hover:bg-purple-600 text-white rounded-full transition-all flex items-center justify-center">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
-              </Link>
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
+
+      <main className="flex-1 flex flex-col min-h-screen overflow-y-auto ml-0 md:ml-64 relative pb-24 md:pb-0">
+        
+        {/* Ambient Glow */}
+        <div className="absolute top-[10%] left-[10%] w-[500px] h-[500px] bg-[#38bdf8]/5 rounded-full blur-[150px] pointer-events-none -z-10" />
+
+        <header className="px-6 py-8 md:px-10 border-b border-white/5 bg-black/80 backdrop-blur-xl sticky top-0 z-40">
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+            <div>
+              <p className="text-[#0ea5e9] text-xs font-bold tracking-widest uppercase mb-1 flex items-center gap-2">
+                <BookOpen className="w-4 h-4" /> Pre-built Sequences
+              </p>
+              <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Macro Library</h1>
             </div>
-          </div>
-        </div>
-      </header>
+            <p className="text-slate-400 max-w-sm text-sm">Deploy pre-configured extraction pipelines instantly to your Command Center.</p>
+          </motion.div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12 pb-24 md:pb-12">
-        {/* Hero */}
-        <section className="mb-12">
-          <div className="text-center md:text-left mb-10">
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">
-              Automation <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">Templates</span>
-            </h1>
-            <p className="text-scrayva-muted text-lg max-w-2xl">
-              Quickly launch web monitoring and research workflows with pre-built templates designed for growth teams.
-            </p>
-          </div>
-
-          {/* Filters */}
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-scrayva-card p-4 rounded-2xl border border-white/5">
-            <div className="relative w-full md:w-96">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                </svg>
-              </div>
-              <input className="block w-full pl-10 pr-3 py-2 border border-white/10 rounded-xl bg-scrayva-bg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-scrayva-accent" placeholder="Search templates..." type="text" value={search} onChange={(e) => setSearch(e.target.value)} />
+          {/* ─── Sleek Search & Filter Bar ─── */}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-[#09090b] p-2 rounded-2xl border border-white/10 shadow-lg">
+            
+            <div className="relative w-full lg:w-96 group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-[#0ea5e9] transition-colors" />
+              <input 
+                className="w-full bg-transparent border-none py-2.5 pl-11 pr-4 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-0" 
+                placeholder="Search macros..." 
+                type="text" 
+                value={search} 
+                onChange={(e) => setSearch(e.target.value)} 
+              />
             </div>
-            <div className="flex gap-2 overflow-x-auto w-full md:w-auto">
+            
+            <div className="h-px lg:h-8 w-full lg:w-px bg-white/10 hidden lg:block" />
+
+            <div className="flex gap-2 overflow-x-auto w-full lg:w-auto custom-scrollbar pb-2 lg:pb-0 px-2 lg:px-0">
               {CATEGORIES.map((cat) => (
-                <button key={cat} onClick={() => setActiveCategory(cat)}
-                  className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeCategory === cat ? 'bg-scrayva-accent text-white' : 'bg-white/5 hover:bg-white/10 text-scrayva-muted'}`}>
+                <button key={cat} onClick={() => setActiveCategory(cat)} className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                  activeCategory === cat ? 'bg-[#0ea5e9]/10 text-[#0ea5e9] border border-[#0ea5e9]/30' : 'bg-transparent text-slate-500 hover:text-white border border-transparent hover:bg-white/5'
+                }`}>
                   {cat}
                 </button>
               ))}
             </div>
-          </div>
-        </section>
 
-        {/* Template Grid */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((t) => (
-            <div key={t.id} className="template-card bg-scrayva-card rounded-2xl border border-white/5 p-6 flex flex-col">
-              <div className="h-12 w-12 bg-purple-500/10 rounded-xl flex items-center justify-center mb-6">
-                <svg className="h-6 w-6 text-scrayva-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path d="M13 10V3L4 14h7v7l9-11h-7z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold mb-2">{t.title}</h3>
-              <p className="text-scrayva-muted text-sm mb-6 flex-grow">{t.desc}</p>
-              <div className="flex flex-wrap gap-2 mb-6">
-                {t.tags.map((tag) => (
-                  <span key={tag} className="px-2 py-1 text-[10px] uppercase tracking-wider font-bold rounded bg-zinc-800 text-zinc-400">{tag}</span>
-                ))}
-              </div>
-              <button onClick={() => handleRun(t)} className="w-full py-3 bg-scrayva-accent hover:bg-scrayva-accentHover text-white rounded-xl font-semibold transition-colors flex items-center justify-center gap-2">
-                Run Automation
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path d="M14 5l7 7m0 0l-7 7m7-7H3" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                </svg>
-              </button>
-            </div>
-          ))}
+          </motion.div>
+        </header>
 
-          {/* Request card */}
-          <button onClick={handleRequest} className="bg-scrayva-card/50 rounded-2xl border-2 border-dashed border-white/5 p-6 flex flex-col items-center justify-center text-center group cursor-pointer hover:border-scrayva-accent transition-all duration-300 w-full">
-            <div className="h-12 w-12 bg-white/5 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <svg className="h-6 w-6 text-scrayva-muted group-hover:text-scrayva-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-bold text-scrayva-muted group-hover:text-white transition-colors">Request a Template</h3>
-            <p className="text-scrayva-muted text-xs mt-2">Can&apos;t find what you need? Email us and we&apos;ll build it.</p>
-          </button>
+        <section className="p-4 md:p-10 max-w-7xl w-full mx-auto">
+          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <AnimatePresence>
+              {filtered.map((t, i) => (
+                <motion.div 
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3, delay: i * 0.05 }}
+                  key={t.id} 
+                  className="bg-[#09090b] border border-white/5 rounded-3xl p-6 flex flex-col group hover:border-[#0ea5e9]/30 transition-colors relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#0ea5e9]/0 group-hover:bg-[#0ea5e9]/10 blur-3xl rounded-full transition-colors duration-500" />
+                  
+                  <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-[#0ea5e9]/10 group-hover:border-[#0ea5e9]/30 transition-all duration-300">
+                    <LayoutGrid className="w-6 h-6 text-slate-400 group-hover:text-[#0ea5e9] transition-colors" />
+                  </div>
+                  
+                  <h3 className="text-xl font-bold text-white mb-2 tracking-tight">{t.title}</h3>
+                  <p className="text-slate-400 text-sm mb-6 flex-grow leading-relaxed">{t.desc}</p>
+                  
+                  <div className="flex flex-wrap gap-2 mb-8">
+                    {t.tags.map((tag) => (
+                      <span key={tag} className="px-2.5 py-1 text-[10px] uppercase tracking-widest font-bold rounded-md bg-[#18181b] border border-white/5 text-slate-400">{tag}</span>
+                    ))}
+                  </div>
+                  
+                  <button onClick={() => handleRun(t)} className="w-full py-3.5 bg-white/5 hover:bg-white text-slate-300 hover:text-black rounded-xl font-bold transition-all flex items-center justify-center gap-2 group/btn">
+                    Deploy Macro
+                    <Play className="w-4 h-4 text-slate-400 group-hover/btn:text-black transition-colors" />
+                  </button>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+
+            {/* Custom Request Card */}
+            <motion.button 
+              layout initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              onClick={handleRequest} 
+              className="bg-transparent border-2 border-dashed border-white/10 rounded-3xl p-6 flex flex-col items-center justify-center text-center group cursor-pointer hover:border-[#0ea5e9]/50 hover:bg-[#0ea5e9]/5 transition-all duration-300 min-h-[300px]"
+            >
+              <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform group-hover:bg-[#0ea5e9]/20">
+                <Plus className="w-6 h-6 text-slate-500 group-hover:text-[#0ea5e9]" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-400 group-hover:text-white transition-colors">Request Custom Macro</h3>
+              <p className="text-slate-500 text-xs mt-2 max-w-[200px]">Need a specific extraction pipeline? Let our engineers build it.</p>
+            </motion.button>
+          </motion.div>
         </section>
       </main>
 
-      <footer className="border-t border-white/5 py-12 mt-20">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="text-scrayva-muted text-sm flex flex-col md:flex-row justify-center items-center gap-4">
-            <span>© 2026 Scrayva Automation Private Limited.</span>
-            <Link className="hover:text-white transition-colors" href="/privacy">Privacy Policy</Link>
-            <Link className="hover:text-white transition-colors" href="/terms">Terms</Link>
-          </div>
-        </div>
-      </footer>
-
       <MobileNav />
-
       {toast && <Toast {...toast} onClose={() => showToast(null)} />}
+      
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 0px; height: 0px; display: none; }
+      `}</style>
     </div>
   );
 }
